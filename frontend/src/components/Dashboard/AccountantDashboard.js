@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AccountantDashboard.css';
-import { FiHome, FiUsers, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiHome, FiUsers, FiLogOut, FiMenu, FiX, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
+import ClientsAccountant from '../ClientsAccountant/ClientsAccountant';
 
 export default function AccountantDashboard({ onSignOut }) {
   const [page, setPage] = useState('dashboard');
@@ -18,7 +19,6 @@ export default function AccountantDashboard({ onSignOut }) {
       setSidebarOpen(false);
     }
   };
-
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -92,26 +92,23 @@ export default function AccountantDashboard({ onSignOut }) {
         
         <section className="admin-dashboard-content">
           {page === 'dashboard' && (
-            <div className="dashboard-stat-grid">
-              <div className="dashboard-stat-card">
-                <div className="dashboard-stat-title">Total Clients</div>
-                <div className="dashboard-stat-value">24</div>
-                <div className="dashboard-stat-change dashboard-stat-change-positive">+3 this month</div>
-              </div>
-              <div className="dashboard-stat-card">
-                <div className="dashboard-stat-title">Active Projects</div>
-                <div className="dashboard-stat-value">15</div>
-                <div className="dashboard-stat-change">In Progress</div>
-              </div>
-              <div className="dashboard-stat-card">
-                <div className="dashboard-stat-title">Monthly Revenue</div>
-                <div className="dashboard-stat-value">$12,450</div>
-                <div className="dashboard-stat-change dashboard-stat-change-positive">+8.3%</div>
-              </div>
-            </div>
+           <div className="empty-dashboard">
+           <div className="empty-dashboard-title">Welcome to FinBooks Accountant </div>
+           <p className="empty-dashboard-description">
+             Manage your clients efficiently from this dashboard. 
+             Use the navigation menu to access different sections of the admin panel.
+           </p>
+           <div className="empty-dashboard-actions">
+             <button 
+               className="accountants-btn accountants-btn-primary"
+               onClick={() => handlePageChange('clients')}
+             >
+               <FiUsers /> Manage clients
+             </button>
+           </div>
+         </div>
           )}
-          
-          {page === 'clients'}
+          {page === 'clients' && <ClientsAccountant />}
         </section>
       </main>
     </div>
