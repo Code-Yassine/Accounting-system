@@ -245,8 +245,13 @@
   }
   
   .clients-status-inactive {
-    background: rgba(220, 178, 38, 0.1);
+    background: rgba(165, 75, 75, 0.1);
     color: var(--danger);
+  }
+
+  .clients-status-pending {
+    background: rgba(207, 131, 69, 0.1);
+    color: var(--warning);
   }
   
   .clients-actions-cell {

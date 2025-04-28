@@ -15,6 +15,17 @@ export async function addAccountant({ name, email, password }) {
   return data;
 }
 
+export async function modifyAccountant(id, data) {
+  const res = await fetch(`/api/accountants/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  const responseData = await res.json();
+  if (!res.ok) throw new Error(responseData.message || 'Failed to modify accountant');
+  return responseData;
+}
+
 export async function activateAccountant(id) {
   const res = await fetch(`/api/accountants/${id}/activate`, { method: 'PATCH' });
   if (!res.ok) throw new Error('Failed to activate accountant');
@@ -31,4 +42,4 @@ export async function deleteAccountant(id) {
   const res = await fetch(`/api/accountants/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('Failed to delete accountant');
   return await res.json();
-} 
+}

@@ -3,6 +3,7 @@ import './AccountantsAdmin.css';
 import {
   getAccountants,
   addAccountant,
+  modifyAccountant,
   activateAccountant,
   deactivateAccountant,
   deleteAccountant
@@ -17,7 +18,8 @@ import {
   FiUser, 
   FiUsers,
   FiAlertTriangle,
-  FiLoader
+  FiLoader,
+  FiEdit2
 } from 'react-icons/fi';
 
 // Confirmation Modal Component
@@ -195,6 +197,163 @@ function AddAccountantModal({ show, onClose, onSubmit, isLoading, error }) {
   );
 }
 
+// Modify Accountant Modal Component
+function ModifyAccountantModal({ show, accountant, onClose, onSubmit, isLoading, error }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formErrors, setFormErrors] = useState({});
+
+  // Reset form when modal closes or accountant changes
+  useEffect(() => {
+    if (!show) {
+      resetForm();
+    } else if (accountant) {
+      setName(accountant.name || '');
+      setEmail(accountant.email || '');
+      setPassword('');
+      setConfirmPassword('');
+    }
+  }, [show, accountant]);
+
+  const resetForm = () => {
+    setName('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setFormErrors({});
+  };
+
+  const validate = () => {
+    const errors = {};
+    
+    if (!name.trim()) errors.name = 'Name is required';
+    if (!email.trim()) errors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Email is invalid';
+    
+    // Password is optional for modification, but if provided, it must be valid
+    if (password) {
+      if (password.length < 6) errors.password = 'Password must be at least 6 characters';
+      if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (validate()) {
+      const data = { name, email };
+      if (password) data.password = password;
+      
+      onSubmit(accountant._id, data);
+    }
+  };
+
+  if (!show) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <div className="modal-header">
+          <h3 className="modal-title">Modify Accountant</h3>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            <div className="form-group">
+              <label htmlFor="name" className="form-label">Name</label>
+              <input
+                id="name"
+                type="text"
+                className="form-control"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter full name"
+                autoComplete="off"
+              />
+              {formErrors.name && <div className="form-error">{formErrors.name}</div>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">Email</label>
+              <input
+                id="email"
+                type="email"
+                className="form-control"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email address"
+                autoComplete="off"
+              />
+              {formErrors.email && <div className="form-error">{formErrors.email}</div>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">Password (leave blank to keep current)</label>
+              <input
+                id="password"
+                type="password"
+                className="form-control"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter new password"
+                autoComplete="new-password"
+              />
+              {formErrors.password && <div className="form-error">{formErrors.password}</div>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                className="form-control"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                autoComplete="new-password"
+                disabled={!password}
+              />
+              {formErrors.confirmPassword && <div className="form-error">{formErrors.confirmPassword}</div>}
+            </div>
+            
+            {error && <div className="form-error">{error}</div>}
+          </div>
+          
+          <div className="modal-actions">
+            <button 
+              type="button" 
+              className="accountants-btn accountants-btn-outline" 
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              <FiX /> Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="accountants-btn accountants-btn-primary"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <FiLoader className="icon-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <FiCheck /> Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // Empty State Component
 function EmptyState({ isLoading, isFiltered }) {
   if (isLoading) {
@@ -232,6 +391,9 @@ export default function AccountantsAdmin() {
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddingAccountant, setIsAddingAccountant] = useState(false);
+  const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
+  const [isModifyingAccountant, setIsModifyingAccountant] = useState(false);
+  const [selectedAccountant, setSelectedAccountant] = useState(null);
   const [confirmModal, setConfirmModal] = useState({
     show: false,
     title: '',
@@ -293,6 +455,23 @@ export default function AccountantsAdmin() {
       console.error('Error adding accountant:', err);
     } finally {
       setIsAddingAccountant(false);
+    }
+  };
+
+  // Handle modify accountant form submission
+  const handleModifyAccountant = async (id, accountantData) => {
+    setIsModifyingAccountant(true);
+    setError('');
+    
+    try {
+      await modifyAccountant(id, accountantData);
+      await fetchAccountants();
+      setIsModifyModalOpen(false);
+    } catch (err) {
+      setError(err.message || 'Failed to modify accountant');
+      console.error('Error modifying accountant:', err);
+    } finally {
+      setIsModifyingAccountant(false);
     }
   };
 
@@ -368,6 +547,16 @@ export default function AccountantsAdmin() {
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddAccountant}
         isLoading={isAddingAccountant}
+        error={error}
+      />
+      
+      {/* Modify Accountant Modal */}
+      <ModifyAccountantModal
+        show={isModifyModalOpen}
+        accountant={selectedAccountant}
+        onClose={() => setIsModifyModalOpen(false)}
+        onSubmit={handleModifyAccountant}
+        isLoading={isModifyingAccountant}
         error={error}
       />
       
@@ -462,6 +651,17 @@ export default function AccountantsAdmin() {
                           <FiUserX />
                         </button>
                       )}
+                      <button 
+                        className="accountants-action-btn accountants-action-btn-blue"
+                        onClick={() => {
+                          setSelectedAccountant(accountant);
+                          setIsModifyModalOpen(true);
+                        }}
+                        aria-label="Modify accountant"
+                        title="Modify accountant"
+                      >
+                        <FiEdit2 />
+                      </button>
                       <button 
                         className="accountants-action-btn accountants-action-btn-red"
                         onClick={() => openConfirmModal('delete', accountant._id)}

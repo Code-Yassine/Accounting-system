@@ -74,4 +74,41 @@ exports.deleteAccountant = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+// Modify accountant
+exports.modifyAccountant = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, password } = req.body;
+    
+    if (!name && !email && !password) {
+      return res.status(400).json({ message: 'At least one field must be provided' });
+    }
+    
+    // Check if email is already in use by another accountant
+    if (email) {
+      const existingAccountant = await Accountant.findOne({ email, _id: { $ne: id } });
+      if (existingAccountant) {
+        return res.status(400).json({ message: 'Email is already in use' });
+      }
+    }
+    
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (password) updateData.password = await bcrypt.hash(password, 10);
+    
+    const accountant = await Accountant.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+    
+    if (!accountant) return res.status(404).json({ message: 'Accountant not found' });
+    
+    res.json(accountant);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 }; 

@@ -10,6 +10,8 @@ router.post('/', accountantController.addAccountant);
 router.patch('/:id/activate', accountantController.activateAccountant);
 // Deactivate
 router.patch('/:id/deactivate', accountantController.deactivateAccountant);
+// Modify
+router.patch('/:id', accountantController.modifyAccountant);
 // Delete
 router.delete('/:id', accountantController.deleteAccountant);
 

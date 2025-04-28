@@ -19,7 +19,8 @@ import {
   FiUser, 
   FiUsers,
   FiAlertTriangle,
-  FiLoader
+  FiLoader,
+  FiClock
 } from 'react-icons/fi';
 
 // Confirmation Modal Component
@@ -574,16 +575,22 @@ export default function ClientsAccountant() {
                     <td>
                       <span className={`clients-status ${
                         client.status === 'accepted' 
-                          ? 'clients-status-active' 
-                          : 'clients-status-inactive'
+                          ? 'clients-status-active'
+                          : client.status === 'rejected'
+                            ? 'clients-status-inactive' 
+                            : 'clients-status-pending'
                       }`}>
                         {client.status === 'accepted' ? (
                           <>
                             <FiCheck /> Accepted
                           </>
+                        ) : client.status === 'rejected' ? (
+                          <>
+                            <FiX /> Rejected
+                          </>
                         ) : (
                           <>
-                            <FiX /> Pending
+                            <FiClock /> Pending
                           </>
                         )}
                       </span>
@@ -600,7 +607,7 @@ export default function ClientsAccountant() {
                       >
                         <FiEdit2 />
                       </button>
-                      
+
                       {/* {client.status === 'rejected' ? (
                         <button 
                           className="clients-action-btn clients-action-btn-green"
