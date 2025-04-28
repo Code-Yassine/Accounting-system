@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './AdminDashboard.css';
 import AccountantsAdmin from './AccountantsAdmin';
 import { FiHome, FiUsers, FiBriefcase, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
@@ -6,6 +6,8 @@ import { FiHome, FiUsers, FiBriefcase, FiLogOut, FiMenu, FiX } from 'react-icons
 export default function AdminDashboard({ onSignOut }) {
   const [page, setPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -17,6 +19,23 @@ export default function AdminDashboard({ onSignOut }) {
       setSidebarOpen(false);
     }
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    }
+    if (profileOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileOpen]);
 
   return (
     <div className="admin-dashboard-bg">
@@ -63,10 +82,20 @@ export default function AdminDashboard({ onSignOut }) {
             {page === 'accountants' && 'Manage Accountants'}
             {page === 'clients' && 'Manage Clients'}
           </h1>
-          
-          <div className="admin-dashboard-user">
+          <div className="admin-dashboard-user" ref={profileRef} onClick={() => setProfileOpen((open) => !open)} style={{ position: 'relative', cursor: 'pointer' }}>
             <div className="admin-dashboard-user-avatar">AU</div>
             <span className="admin-dashboard-user-name">Admin User</span>
+            {profileOpen && (
+              <div className="admin-dashboard-profile-dropdown">
+                <div className="admin-dashboard-profile-info">
+                  <div className="admin-dashboard-profile-avatar">AU</div>
+                  <div>
+                    <div className="admin-dashboard-profile-name">Admin User</div>
+                    <div className="admin-dashboard-profile-email">admin@finbooks.com</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </header>
         

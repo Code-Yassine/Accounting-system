@@ -472,3 +472,50 @@ body, html {
     grid-template-columns: 1fr;
   }
 }
+
+.admin-dashboard-profile-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  min-width: 220px;
+  padding: 1rem 1.25rem;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+  border: 1px solid var(--border);
+}
+
+.admin-dashboard-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-dashboard-profile-avatar {
+  background: var(--primary-light);
+  color: white;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-dashboard-profile-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+.admin-dashboard-profile-email {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 0.15rem;
+  word-break: break-all;
+}
