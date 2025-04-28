@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AccountantDashboard.css';
-import ClientsAccountant from '../ClientsAccountant/ClientsAccountant';
 import { FiHome, FiUsers, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 
 export default function AccountantDashboard({ onSignOut }) {
@@ -112,7 +111,7 @@ export default function AccountantDashboard({ onSignOut }) {
             </div>
           )}
           
-          {page === 'clients' && <ClientsAccountant />}
+          {page === 'clients'}
         </section>
       </main>
     </div>

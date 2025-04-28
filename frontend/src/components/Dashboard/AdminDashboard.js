@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AdminDashboard.css';
-import AccountantsAdmin from './AccountantsAdmin';
+import AccountantsAdmin from '../AccountantsAdmin/AccountantsAdmin';
 import { FiHome, FiUsers, FiBriefcase, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 
 export default function AdminDashboard({ onSignOut }) {

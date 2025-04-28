@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import SignIn from './components/SignIn/SignIn';
 import AdminDashboard from './components/Dashboard/AdminDashboard';
-import Dashboard from './components/Dashboard/Dashboard';
+import AccountantDashboard from './components/Dashboard/AccountantDashboard';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -27,7 +27,7 @@ function App() {
   }
 
   if (user.role === 'accountant') {
-    return <Dashboard onSignOut={handleSignOut} />;
+    return <AccountantDashboard onSignOut={handleSignOut} />;
   }
 
   // For any other role (e.g., client), sign out and show SignIn
