@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import './ClientsAccountant.css';
+import './ClientsAdmin.css';
 import {
-  getClients,
+  getAllClients,
   addClient,
   acceptClient,
   rejectClient,
   deleteClient,
   modifyClient
 } from '../../api/clients';
+import { getAccountants } from '../../api/accountants';
 import { 
   FiSearch, 
   FiUserPlus, 
@@ -20,7 +21,8 @@ import {
   FiUsers,
   FiAlertTriangle,
   FiLoader,
-  FiClock
+  FiClock,
+  FiFilter
 } from 'react-icons/fi';
 
 // Confirmation Modal Component
@@ -277,9 +279,7 @@ function ModifyClientModal({ show, client, onClose, onSubmit, isLoading, error }
               />
               {formErrors.email && <div className="form-error">{formErrors.email}</div>}
             </div>
-            <div className="form-info">
-              <FiAlertTriangle /> Note: Modifying client information will reset their status to "Pending".
-            </div>
+            
             {error && <div className="form-error">{error}</div>}
           </div>
           
@@ -315,7 +315,7 @@ function ModifyClientModal({ show, client, onClose, onSubmit, isLoading, error }
 }
 
 // Empty State Component
-function EmptyState({ isLoading, isFiltered, statusFilter }) {
+function EmptyState({ isLoading, isFiltered, statusFilter, accountantFilter, accountants }) {
   if (isLoading) {
     return (
       <div className="clients-loading">
@@ -324,6 +324,13 @@ function EmptyState({ isLoading, isFiltered, statusFilter }) {
       </div>
     );
   }
+
+  // Get accountant name for display in empty state
+  const getAccountantName = () => {
+    if (accountantFilter === 'all') return null;
+    const accountant = accountants.find(a => a._id === accountantFilter);
+    return accountant ? accountant.name : "Selected accountant";
+  };
   
   return (
     <div className="clients-empty">
@@ -332,10 +339,20 @@ function EmptyState({ isLoading, isFiltered, statusFilter }) {
           <FiSearch />
           <p>No clients match your search criteria.</p>
         </>
+      ) : statusFilter !== 'all' && accountantFilter !== 'all' ? (
+        <>
+          <FiUsers />
+          <p>No clients with "{statusFilter}" status assigned to {getAccountantName()}.</p>
+        </>
       ) : statusFilter !== 'all' ? (
         <>
           <FiUsers />
           <p>No clients with "{statusFilter}" status found.</p>
+        </>
+      ) : accountantFilter !== 'all' ? (
+        <>
+          <FiUsers />
+          <p>No clients assigned to {getAccountantName()}.</p>
         </>
       ) : (
         <>
@@ -348,14 +365,15 @@ function EmptyState({ isLoading, isFiltered, statusFilter }) {
 }
 
 // Main ClientsAccountant Component
-export default function ClientsAccountant() {
+export default function ClientsAdmin() {
   const [clients, setClients] = useState([]);
   const [filteredClients, setFilteredClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'accepted', 'rejected', 'pending'
+  const [accountantFilter, setAccountantFilter] = useState('all');
+  const [accountants, setAccountants] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddingClient, setIsAddingClient] = useState(false);
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
   const [isModifyingClient, setIsModifyingClient] = useState(false);
@@ -372,18 +390,24 @@ export default function ClientsAccountant() {
   // Fetch accountants on initial load
   useEffect(() => {
     fetchClients();
+    fetchAccountants();
   }, []);
 
-  // Filter clients when search term or status filter changes
+  // Filter clients when search term or filters change
   useEffect(() => {
     let filtered = [...clients];
     
-    // First apply status filter
+    // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(client => client.status === statusFilter);
     }
     
-    // Then apply search filter
+    // Apply accountant filter
+    if (accountantFilter !== 'all') {
+      filtered = filtered.filter(client => client.accountantId === accountantFilter);
+    }
+    
+    // Apply search filter
     if (searchTerm.trim() !== '') {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(client => 
@@ -393,7 +417,7 @@ export default function ClientsAccountant() {
     }
     
     setFilteredClients(filtered);
-  }, [searchTerm, statusFilter, clients]);
+  }, [searchTerm, statusFilter, accountantFilter, clients]);
 
   // Fetch clients from API
   const fetchClients = async () => {
@@ -401,7 +425,7 @@ export default function ClientsAccountant() {
     setError('');
     
     try {
-      const data = await getClients();
+      const data = await getAllClients(searchTerm);
       setClients(data);
       setFilteredClients(data);
     } catch (err) {
@@ -412,20 +436,13 @@ export default function ClientsAccountant() {
     }
   };
 
-  // Handle add client form submission
-  const handleAddClient = async (clientData) => {
-    setIsAddingClient(true);
-    setError('');
-    
+  // Fetch accountants for filter dropdown
+  const fetchAccountants = async () => {
     try {
-      await addClient(clientData);
-      await fetchClients();
-      setIsAddModalOpen(false);
+      const data = await getAccountants();
+      setAccountants(data);
     } catch (err) {
-      setError(err.message || 'Failed to add client');
-    console.error('Error adding client:', err);
-    } finally {
-      setIsAddingClient(false);
+      console.error('Error fetching accountants:', err);
     }
   };
 
@@ -512,15 +529,6 @@ export default function ClientsAccountant() {
 
   return (
     <div className="accountants-admin">
-      {/* Add Client Modal */}
-      <AddClientModal 
-        show={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSubmit={handleAddClient}
-        isLoading={isAddingClient}
-        error={error}
-      />
-      
       {/* Modify Client Modal */}
       <ModifyClientModal 
         show={isModifyModalOpen}
@@ -556,39 +564,56 @@ export default function ClientsAccountant() {
             />
           </div>
           
-          <div className="clients-filter-buttons">
-            <button 
-              className={`clients-filter-btn ${statusFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('all')}
-            >
-              All
-            </button>
-            <button 
-              className={`clients-filter-btn ${statusFilter === 'accepted' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('accepted')}
-            >
-              <FiCheck className="filter-icon" /> Accepted
-            </button>
-            <button 
-              className={`clients-filter-btn ${statusFilter === 'pending' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('pending')}
-            >
-              <FiClock className="filter-icon" /> Pending
-            </button>
-            <button 
-              className={`clients-filter-btn ${statusFilter === 'rejected' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('rejected')}
-            >
-              <FiX className="filter-icon" /> Rejected
-            </button>
+          <div className="clients-filter-container">
+            <div className="clients-filter-buttons">
+              <button 
+                className={`clients-filter-btn ${statusFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setStatusFilter('all')}
+              >
+                All
+              </button>
+              <button 
+                className={`clients-filter-btn ${statusFilter === 'accepted' ? 'active' : ''}`}
+                onClick={() => setStatusFilter('accepted')}
+              >
+                <FiCheck className="filter-icon" /> Accepted
+              </button>
+              <button 
+                className={`clients-filter-btn ${statusFilter === 'pending' ? 'active' : ''}`}
+                onClick={() => setStatusFilter('pending')}
+              >
+                <FiClock className="filter-icon" /> Pending
+              </button>
+              <button 
+                className={`clients-filter-btn ${statusFilter === 'rejected' ? 'active' : ''}`}
+                onClick={() => setStatusFilter('rejected')}
+              >
+                <FiX className="filter-icon" /> Rejected
+              </button>
+            </div>
+            
+            <div className="clients-accountant-filter">
+              <label htmlFor="accountant-filter" className="accountant-filter-label">
+                <FiFilter /> Accountant:
+              </label>
+              <select 
+                id="accountant-filter"
+                className="accountant-filter-select"
+                value={accountantFilter}
+                onChange={(e) => setAccountantFilter(e.target.value)}
+              >
+                <option value="all">All Accountants</option>
+                {accountants.map(accountant => (
+                  <option 
+                    key={accountant._id} 
+                    value={accountant._id}
+                  >
+                    {accountant.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          
-          <button 
-            className="clients-btn clients-btn-primary"
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <FiUserPlus /> Add Client
-          </button>
         </div>
         
         <div className="clients-table-container">
@@ -597,6 +622,8 @@ export default function ClientsAccountant() {
               isLoading={isLoading} 
               isFiltered={searchTerm.trim() !== ''}
               statusFilter={statusFilter}
+              accountantFilter={accountantFilter}
+              accountants={accountants}
             />
           ) : (
             <table className="clients-table">
@@ -605,6 +632,7 @@ export default function ClientsAccountant() {
                   <th>NAME</th>
                   <th>EMAIL</th>
                   <th>STATUS</th>
+                  <th>ACCOUNTANT</th>
                   <th>ACTIONS</th>
                 </tr>
               </thead>
@@ -636,19 +664,62 @@ export default function ClientsAccountant() {
                         )}
                       </span>
                     </td>
+                    <td className="clients-accountant">
+                      <FiUser /> {client.accountantName || client.accountantId}
+                    </td>
                     <td className="clients-actions-cell">
+
+                      {client.status === 'rejected' ? (
+                        <button 
+                          className="clients-action-btn clients-action-btn-green"
+                          onClick={() => openConfirmModal('accept', client._id)}
+                          aria-label="Accept client"
+                          title="Accept client"
+                        >
+                          <FiCheck />
+                        </button>
+                      ) : client.status === 'pending' ? (
+                        <>
+                          <button 
+                            className="clients-action-btn clients-action-btn-green"
+                            onClick={() => openConfirmModal('accept', client._id)}
+                            aria-label="Accept client"
+                            title="Accept client"
+                          >
+                            <FiCheck />
+                          </button>
+                          <button 
+                            className="clients-action-btn clients-action-btn-yellow"
+                            onClick={() => openConfirmModal('reject', client._id)}
+                            aria-label="Reject client"
+                            title="Reject client"
+                          >
+                            <FiUserX />
+                          </button>
+                        </>
+                      ) : (
+                        <button 
+                          className="clients-action-btn clients-action-btn-yellow"
+                          onClick={() => openConfirmModal('reject', client._id)}
+                          aria-label="Reject client"
+                          title="Reject client"
+                        >
+                          <FiUserX />
+                        </button>
+                      )}
+                      
                       <button 
                         className="clients-action-btn clients-action-btn-blue"
                         onClick={() => {
                           setSelectedClient(client);
                           setIsModifyModalOpen(true);
                         }}
-                        aria-label="Edit client info"
-                        title="Edit client info"
+                        aria-label="Modify client"
+                        title="Modify client"
                       >
                         <FiEdit2 />
                       </button>
-                      
+
                       <button 
                         className="clients-action-btn clients-action-btn-red"
                         onClick={() => openConfirmModal('delete', client._id)}

@@ -292,13 +292,13 @@
     background: rgba(16, 185, 129, 0.1);
   }
   
-  .clients-action-btn-yellow {
-    color: var(--warning);
-    border-color: rgba(251, 191, 36, 0.2);
+  .clients-action-btn-blue {
+    color: var(--primary-light);
+    border-color: rgba(59, 130, 246, 0.2);
   }
   
-  .clients-action-btn-yellow:hover {
-    background: rgba(251, 191, 36, 0.1);
+  .clients-action-btn-blue:hover {
+    background: rgba(59, 130, 246, 0.1);
   }
   
   .clients-action-btn-red {
@@ -487,5 +487,61 @@
     .modal-body,
     .modal-actions {
       padding: 1.25rem;
+    }
+  }
+  
+  /* Status Filter Buttons */
+  .clients-filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0 1rem;
+  }
+  
+  .clients-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .clients-filter-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+  
+  .clients-filter-btn.active {
+    background: #0f172a;
+    color: white;
+    border-color: #0f172a;
+  }
+  
+  .filter-icon {
+    font-size: 1rem;
+  }
+  
+  @media (max-width: 768px) {
+    .clients-actions {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .clients-filter-buttons {
+      margin: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .clients-filter-btn {
+      flex: 1;
+      min-width: 80px;
+      justify-content: center;
     }
   }

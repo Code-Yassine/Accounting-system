@@ -355,7 +355,7 @@ function ModifyAccountantModal({ show, accountant, onClose, onSubmit, isLoading,
 }
 
 // Empty State Component
-function EmptyState({ isLoading, isFiltered }) {
+function EmptyState({ isLoading, isFiltered, statusFilter }) {
   if (isLoading) {
     return (
       <div className="accountants-loading">
@@ -370,7 +370,11 @@ function EmptyState({ isLoading, isFiltered }) {
       {isFiltered ? (
         <>
           <FiSearch />
-          <p>No accountants match your search criteria.</p>
+          {statusFilter !== 'all' ? (
+            <p>No {statusFilter} accountants found.</p>
+          ) : (
+            <p>No accountants match your search criteria.</p>
+          )}
         </>
       ) : (
         <>
@@ -387,6 +391,7 @@ export default function AccountantsAdmin() {
   const [accountants, setAccountants] = useState([]);
   const [filteredAccountants, setFilteredAccountants] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'inactive'
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -408,21 +413,26 @@ export default function AccountantsAdmin() {
     fetchAccountants();
   }, []);
 
-  // Filter accountants when search term changes
+  // Filter accountants when search term or status filter changes
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredAccountants(accountants);
-      return;
+    let filtered = [...accountants];
+    
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(accountant => accountant.status === statusFilter);
     }
     
-    const search = searchTerm.toLowerCase();
-    const filtered = accountants.filter(accountant => 
-      accountant.name.toLowerCase().includes(search) || 
-      accountant.email.toLowerCase().includes(search)
-    );
+    // Apply search filter
+    if (searchTerm.trim() !== '') {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(accountant => 
+        accountant.name.toLowerCase().includes(search) || 
+        accountant.email.toLowerCase().includes(search)
+      );
+    }
     
     setFilteredAccountants(filtered);
-  }, [searchTerm, accountants]);
+  }, [searchTerm, statusFilter, accountants]);
 
   // Fetch accountants from API
   const fetchAccountants = async () => {
@@ -585,6 +595,29 @@ export default function AccountantsAdmin() {
             />
           </div>
           
+          <div className="accountants-filter-container">
+            <div className="accountants-filter-buttons">
+              <button 
+                className={`accountants-filter-btn ${statusFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setStatusFilter('all')}
+              >
+                All
+              </button>
+              <button 
+                className={`accountants-filter-btn ${statusFilter === 'active' ? 'active' : ''}`}
+                onClick={() => setStatusFilter('active')}
+              >
+                <FiCheck className="filter-icon" /> Active
+              </button>
+              <button 
+                className={`accountants-filter-btn ${statusFilter === 'inactive' ? 'active' : ''}`}
+                onClick={() => setStatusFilter('inactive')}
+              >
+                <FiX className="filter-icon" /> Inactive
+              </button>
+            </div>
+          </div>
+          
           <button 
             className="accountants-btn accountants-btn-primary"
             onClick={() => setIsAddModalOpen(true)}
@@ -597,7 +630,8 @@ export default function AccountantsAdmin() {
           {filteredAccountants.length === 0 ? (
             <EmptyState 
               isLoading={isLoading} 
-              isFiltered={searchTerm.trim() !== ''}
+              isFiltered={searchTerm.trim() !== '' || statusFilter !== 'all'}
+              statusFilter={statusFilter}
             />
           ) : (
             <table className="accountants-table">

@@ -484,3 +484,70 @@
       padding: 1.25rem;
     }
   }
+  
+  /* Accountant Filter Buttons */
+  .accountants-filter-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 1rem;
+  }
+  
+  .accountants-filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .accountants-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .accountants-filter-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+  
+  .accountants-filter-btn.active {
+    background: #0f172a;
+    color: white;
+    border-color: #0f172a;
+  }
+  
+  .filter-icon {
+    font-size: 1rem;
+  }
+  
+  @media (max-width: 768px) {
+    .accountants-actions {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .accountants-filter-container {
+      margin: 0;
+      width: 100%;
+    }
+    
+    .accountants-filter-buttons {
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    
+    .accountants-filter-btn {
+      flex: 1;
+      min-width: 80px;
+      justify-content: center;
+    }
+  }

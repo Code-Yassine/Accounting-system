@@ -8,6 +8,36 @@ export default function AccountantDashboard({ onSignOut }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const [accountant, setAccountant] = useState(null);
+
+  // Load accountant info on component mount
+  useEffect(() => {
+    const loadAccountantInfo = () => {
+      // Try to get accountant info from different possible storage locations
+      const accountantData = 
+        JSON.parse(localStorage.getItem('accountant')) || 
+        JSON.parse(localStorage.getItem('user')) || 
+        JSON.parse(localStorage.getItem('userData')) ||
+        JSON.parse(sessionStorage.getItem('user'));
+      
+      if (accountantData) {
+        setAccountant(accountantData);
+      }
+    };
+    
+    loadAccountantInfo();
+  }, []);
+
+  // Get accountant initials for the avatar
+  const getInitials = () => {
+    if (!accountant || !accountant.name) return 'AC';
+    
+    const names = accountant.name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return accountant.name.substring(0, 2).toUpperCase();
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -74,15 +104,18 @@ export default function AccountantDashboard({ onSignOut }) {
             {page === 'clients' && 'Client Management'}
           </h1>
           <div className="admin-dashboard-user" ref={profileRef} onClick={() => setProfileOpen((open) => !open)} style={{ position: 'relative', cursor: 'pointer' }}>
-            <div className="admin-dashboard-user-avatar">AC</div>
-            <span className="admin-dashboard-user-name">Accountant</span>
+            <div className="admin-dashboard-user-avatar">{getInitials()}</div>
+            <span className="admin-dashboard-user-name">{accountant?.name || 'Accountant'}</span>
             {profileOpen && (
               <div className="admin-dashboard-profile-dropdown">
                 <div className="admin-dashboard-profile-info">
-                  <div className="admin-dashboard-profile-avatar">AC</div>
+                  <div className="admin-dashboard-profile-avatar">{getInitials()}</div>
                   <div>
-                    <div className="admin-dashboard-profile-name">Accountant</div>
-                    <div className="admin-dashboard-profile-email">accountant@finbooks.com</div>
+                    <div className="admin-dashboard-profile-name">{accountant?.name || 'Accountant'}</div>
+                    <div className="admin-dashboard-profile-email">{accountant?.email || 'accountant@finbooks.com'}</div>
+                    <div className="admin-dashboard-profile-status">
+                      Status: <span className="profile-status-label">{accountant?.status || 'Active'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -93,10 +126,10 @@ export default function AccountantDashboard({ onSignOut }) {
         <section className="admin-dashboard-content">
           {page === 'dashboard' && (
            <div className="empty-dashboard">
-           <div className="empty-dashboard-title">Welcome to FinBooks Accountant </div>
+           <div className="empty-dashboard-title">Welcome, {accountant?.name || 'Accountant'}</div>
            <p className="empty-dashboard-description">
              Manage your clients efficiently from this dashboard. 
-             Use the navigation menu to access different sections of the admin panel.
+             Use the navigation menu to access different sections of the accountant panel.
            </p>
            <div className="empty-dashboard-actions">
              <button 
