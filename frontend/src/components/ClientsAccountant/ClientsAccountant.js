@@ -8,6 +8,7 @@ import {
   deleteClient,
   modifyClient
 } from '../../api/clients';
+import { addDeleteRequest } from '../../api/deleteRequests';
 import { 
   FiSearch, 
   FiUserPlus, 
@@ -355,6 +356,7 @@ export default function ClientsAccountant() {
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'accepted', 'rejected', 'pending'
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddingClient, setIsAddingClient] = useState(false);
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
@@ -468,10 +470,10 @@ export default function ClientsAccountant() {
         modalConfig.confirmText = 'Reject';
         break;
       case 'delete':
-        modalConfig.title = 'Delete Client';
-        modalConfig.message = 'Are you sure you want to delete this client? This action cannot be undone.';
+        modalConfig.title = 'Request Client Deletion';
+        modalConfig.message = 'Are you sure you want to request deletion for this client? This will create a delete request that needs to be approved by an admin.';
         modalConfig.isDestructive = true;
-        modalConfig.confirmText = 'Delete';
+        modalConfig.confirmText = 'Request Deletion';
         break;
       default:
         return;
@@ -483,6 +485,7 @@ export default function ClientsAccountant() {
   // Handle confirmation modal actions
   const handleConfirmAction = async () => {
     setError('');
+    setSuccessMessage('');
     
     try {
       const { action, data: id } = confirmModal;
@@ -495,7 +498,27 @@ export default function ClientsAccountant() {
           await rejectClient(id);
           break;
         case 'delete':
-          await deleteClient(id);
+          try {
+            await addDeleteRequest({ clientId: id });
+            setSuccessMessage(
+              <div className="clients-success-message">
+                <div className="clients-success-icon">
+                  <FiCheck />
+                </div>
+                <div className="clients-success-content">
+                  <div className="clients-success-title">Delete Request Sent</div>
+                  <div className="clients-success-details">
+                    A delete request has been created and is pending admin approval.
+                    The client will remain in the system until the request is approved.
+                  </div>
+                </div>
+              </div>
+            );
+            setTimeout(() => setSuccessMessage(''), 5000); // Clear success message after 5 seconds
+          } catch (err) {
+            setError('Failed to create delete request');
+            console.error('Error creating delete request:', err);
+          }
           break;
         default:
           break;
@@ -540,6 +563,7 @@ export default function ClientsAccountant() {
       
       <div className="clients-container">
         {error && <div className="clients-error">{error}</div>}
+        {successMessage && <div className="clients-success">{successMessage}</div>}
         
         <div className="clients-actions">
           <div className="clients-search-container">

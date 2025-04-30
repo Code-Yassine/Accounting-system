@@ -10,10 +10,14 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 const accountantsRoutes = require('./routes/accountants');
 const clientsRoutes = require('./routes/clients');
+const deleteRequestsRoutes = require('./routes/deleteRequests');
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/accountants', accountantsRoutes);
 app.use('/api/clients', clientsRoutes);
+app.use('/api/deleteRequests', deleteRequestsRoutes);
+
 
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,

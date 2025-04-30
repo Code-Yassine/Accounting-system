@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import './AdminDashboard.css';
 import AccountantsAdmin from '../AccountantsAdmin/AccountantsAdmin';
 import ClientsAdmin from '../ClientsAdmin/ClientsAdmin';
-import { FiHome, FiUsers, FiBriefcase, FiLogOut, FiMenu, FiX, FiCheck, FiClock, FiUserCheck, FiUserX } from 'react-icons/fi';
+import RequestsAdmin from '../RequestsAdmin/RequestsAdmin';
+import { FiHome, FiUsers, FiBriefcase, FiLogOut, FiMenu, FiX, FiCheck, FiClock, FiUserCheck, FiUserX, FiInbox } from 'react-icons/fi';
 import { getAccountants } from '../../api/accountants';
 import { getAllClients } from '../../api/clients';
 
@@ -148,6 +149,13 @@ export default function AdminDashboard({ onSignOut }) {
           >
             <FiBriefcase className="sidebar-icon" /> <span>Clients</span>
           </a>
+          <a 
+            className={page === 'requests' ? 'active' : ''}
+            href="#requests"
+            onClick={(e) => { e.preventDefault(); handlePageChange('requests'); }}
+          >
+            <FiInbox className="sidebar-icon" /> <span>Requests</span>
+          </a>
         </nav>
         
         <button className="admin-dashboard-signout" onClick={onSignOut}>
@@ -161,6 +169,7 @@ export default function AdminDashboard({ onSignOut }) {
             {page === 'dashboard' && 'Dashboard'}
             {page === 'accountants' && 'Manage Accountants'}
             {page === 'clients' && 'Manage Clients'}
+            {page === 'requests' && 'Manage Requests'}
           </h1>
           <div className="admin-dashboard-user" ref={profileRef} onClick={() => setProfileOpen((open) => !open)} style={{ position: 'relative', cursor: 'pointer' }}>
             <div className="admin-dashboard-user-avatar">{getInitials()}</div>
@@ -259,6 +268,8 @@ export default function AdminDashboard({ onSignOut }) {
           {page === 'accountants' && <AccountantsAdmin />}
           
           {page === 'clients' && <ClientsAdmin />}
+
+          {page === 'requests' && <RequestsAdmin />}
           
         </section>
       </main>
