@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './RequestsAdmin.css';
-import '../../../src/styles/responsive-tables.css';
+
 import {
   getDeleteRequests,
   approveDeleteRequest,
@@ -311,7 +311,7 @@ export default function RequestsAdmin() {
           </div>
         </div>
         
-        <div className="requests-table-container responsive-table-container">
+        <div className="requests-table-container">
           {filteredDeleteRequests.length === 0 ? (
             <EmptyState 
               isLoading={isLoading} 
@@ -319,7 +319,7 @@ export default function RequestsAdmin() {
             />
           ) : (
             <>
-              <table className="requests-table responsive-table">
+              <table className="requests-table ">
                 <thead>
                   <tr>
                     <th className="col-30">CLIENT</th>
@@ -364,8 +364,12 @@ export default function RequestsAdmin() {
                         
                         {/* ACCOUNTANT COLUMN */}
                         <td className="requests-name hide-sm" data-label="Accountant">
-                          {accountantName}
-                          {accountantEmail && <span className="requests-email">{accountantEmail}</span>}
+                        <div className="client-info">
+                            <div className="client-details">
+                              {accountantName}
+                              {accountantEmail && <span className="requests-email">{accountantEmail}</span>}
+                            </div>
+                          </div>
                         </td>
                         
                         {/* STATUS COLUMN */}
