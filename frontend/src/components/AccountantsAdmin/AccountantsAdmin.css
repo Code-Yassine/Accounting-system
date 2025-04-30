@@ -295,6 +295,14 @@
   .accountants-action-btn-yellow:hover {
     background: rgba(251, 191, 36, 0.1);
   }
+  .accountants-action-btn-blue {
+    color: var(--primary-light);
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+  
+  .accountants-action-btn-blue:hover {
+    background: rgba(59, 130, 246, 0.1);
+  }
   
   .accountants-action-btn-red {
     color: var(--danger);
