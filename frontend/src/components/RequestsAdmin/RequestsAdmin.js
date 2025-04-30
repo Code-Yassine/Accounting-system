@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './RequestsAdmin.css';
+import '../../../src/styles/responsive-tables.css';
 import {
   getDeleteRequests,
   approveDeleteRequest,
@@ -10,7 +11,12 @@ import {
   FiCheck, 
   FiX, 
   FiClock,
-  FiLoader
+  FiLoader,
+  FiAlertCircle,
+  FiTrash2,
+  FiUserX,
+  FiFilter,
+  FiChevronRight
 } from 'react-icons/fi';
 
 // Empty state component
@@ -27,6 +33,7 @@ function EmptyState({ isLoading, isFiltered }) {
   if (isFiltered) {
     return (
       <div className="requests-empty-state">
+        <FiFilter />
         <p>No pending delete requests match your search criteria.</p>
       </div>
     );
@@ -34,6 +41,7 @@ function EmptyState({ isLoading, isFiltered }) {
 
   return (
     <div className="requests-empty-state">
+      <FiTrash2 size={24} />
       <p>No pending delete requests found.</p>
     </div>
   );
@@ -50,6 +58,10 @@ function ConfirmModal({ show, title, message, isDestructive, onConfirm, onCancel
           <h3 className="modal-title">{title}</h3>
         </div>
         <div className="modal-body">
+          {isDestructive && <div className="modal-warning">
+            <FiAlertCircle size={20} />
+            <p>This action cannot be undone.</p>
+          </div>}
           <p>{message}</p>
         </div>
         <div className="modal-actions">
@@ -73,7 +85,30 @@ function ConfirmModal({ show, title, message, isDestructive, onConfirm, onCancel
   );
 }
 
-// Main DeleteRequestsAdmin Component
+// Status Badge Component
+function StatusBadge({ status }) {
+  if (status === 'approved') {
+    return (
+      <span className="requests-status requests-status-approved">
+        <FiCheck /> Approved
+      </span>
+    );
+  } else if (status === 'rejected') {
+    return (
+      <span className="requests-status requests-status-rejected">
+        <FiX /> Rejected
+      </span>
+    );
+  } else {
+    return (
+      <span className="requests-status requests-status-pending">
+        <FiClock /> Pending
+      </span>
+    );
+  }
+}
+
+// Main RequestsAdmin Component
 export default function RequestsAdmin() {
   const [deleteRequests, setDeleteRequests] = useState([]);
   const [filteredDeleteRequests, setFilteredDeleteRequests] = useState([]);
@@ -181,6 +216,26 @@ export default function RequestsAdmin() {
     }
   };
 
+  // Format date for better display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    const date = new Date(dateString);
+    
+    // If date is invalid, return default message
+    if (isNaN(date)) return 'Unknown date';
+    
+    // Format the date
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    
+    return date.toLocaleDateString(undefined, options);
+  };
+
   // Handle request approval
   const handleApprove = async (id) => {
     try {
@@ -231,7 +286,10 @@ export default function RequestsAdmin() {
       />
       
       <div className="requests-container">
-        {error && <div className="requests-error">{error}</div>}
+        {error && <div className="requests-error">
+          <FiAlertCircle />
+          <span>{error}</span>
+        </div>}
         
         <div className="requests-header">
           <h1 className="requests-title">Delete Requests</h1>
@@ -253,126 +311,117 @@ export default function RequestsAdmin() {
           </div>
         </div>
         
-        <div className="requests-table-container">
+        <div className="requests-table-container responsive-table-container">
           {filteredDeleteRequests.length === 0 ? (
             <EmptyState 
               isLoading={isLoading} 
               isFiltered={searchTerm.trim() !== ''}
             />
           ) : (
-            <table className="requests-table">
-              <thead>
-                <tr>
-                  <th>CLIENT</th>
-                  <th>ACCOUNTANT</th>
-                  <th>STATUS</th>
-                  <th>DATE</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDeleteRequests.map((deleteRequest) => {
-                  // Client info
-                  const clientName = deleteRequest.clientId && typeof deleteRequest.clientId === 'object' 
-                    ? deleteRequest.clientId.name 
-                    : 'Unknown Client';
-                  const clientEmail = deleteRequest.clientId && typeof deleteRequest.clientId === 'object' 
-                    ? deleteRequest.clientId.email 
-                    : '';
-                  
-                  // Accountant info
-                  const accountantName = deleteRequest.accountantId && typeof deleteRequest.accountantId === 'object' 
-                    ? deleteRequest.accountantId.name 
-                    : 'Unknown Accountant';
-                  const accountantEmail = deleteRequest.accountantId && typeof deleteRequest.accountantId === 'object' 
-                    ? deleteRequest.accountantId.email 
-                    : '';
-                  
-                  // Status info
-                  const status = deleteRequest.status || 'pending';
-                  
-                  return (
-                    <tr key={deleteRequest._id}>
-                      {/* CLIENT COLUMN */}
-                      <td className="requests-name">
-                        {clientName}
-                        <span className="requests-email">{clientEmail}</span>
-                      </td>
-                      
-                      {/* ACCOUNTANT COLUMN */}
-                      <td className="requests-name">
-                        {accountantName}
-                        <span className="requests-email">{accountantEmail}</span>
-                      </td>
-                      
-                      {/* STATUS COLUMN */}
-                      <td>
-                        <span className={`requests-status ${
-                          status === 'approved' 
-                            ? 'requests-status-approved'
-                            : status === 'rejected'
-                              ? 'requests-status-rejected' 
-                              : 'requests-status-pending'
-                        }`}>
-                          {status === 'approved' ? (
-                            <>
-                              <FiCheck /> Approved
-                            </>
-                          ) : status === 'rejected' ? (
-                            <>
-                              <FiX /> Rejected
-                            </>
-                          ) : (
-                            <>
-                              <FiClock /> Pending
-                            </>
+            <>
+              <table className="requests-table responsive-table">
+                <thead>
+                  <tr>
+                    <th className="col-30">CLIENT</th>
+                    <th className="col-25 hide-sm">ACCOUNTANT</th>
+                    <th className="col-15">STATUS</th>
+                    <th className="col-15 hide-xs">DATE</th>
+                    <th className="col-15">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDeleteRequests.map((deleteRequest) => {
+                    // Client info
+                    const clientName = deleteRequest.clientId && typeof deleteRequest.clientId === 'object' 
+                      ? deleteRequest.clientId.name 
+                      : 'Unknown Client';
+                    const clientEmail = deleteRequest.clientId && typeof deleteRequest.clientId === 'object' 
+                      ? deleteRequest.clientId.email 
+                      : '';
+                    
+                    // Accountant info
+                    const accountantName = deleteRequest.accountantId && typeof deleteRequest.accountantId === 'object' 
+                      ? deleteRequest.accountantId.name 
+                      : 'Unknown Accountant';
+                    const accountantEmail = deleteRequest.accountantId && typeof deleteRequest.accountantId === 'object' 
+                      ? deleteRequest.accountantId.email 
+                      : '';
+                    
+                    // Status info
+                    const status = deleteRequest.status || 'pending';
+                    
+                    return (
+                      <tr key={deleteRequest._id}>
+                        {/* CLIENT COLUMN */}
+                        <td className="requests-name" data-label="Client">
+                          <div className="client-info">
+                            <div className="client-details">
+                              {clientName}
+                              {clientEmail && <span className="requests-email">{clientEmail}</span>}
+                            </div>
+                          </div>
+                        </td>
+                        
+                        {/* ACCOUNTANT COLUMN */}
+                        <td className="requests-name hide-sm" data-label="Accountant">
+                          {accountantName}
+                          {accountantEmail && <span className="requests-email">{accountantEmail}</span>}
+                        </td>
+                        
+                        {/* STATUS COLUMN */}
+                        <td data-label="Status">
+                          <StatusBadge status={status} />
+                        </td>
+                        
+                        {/* DATE COLUMN */}
+                        <td className="requests-date hide-xs" data-label="Date">
+                          {formatDate(deleteRequest.createdAt)}
+                        </td>
+                        
+                        {/* ACTIONS COLUMN */}
+                        <td className="requests-actions-cell" data-label="Actions">
+                          {status === 'pending' && (
+                            <div className="action-buttons-responsive">
+                              <button
+                                className="requests-action-btn requests-action-approve"
+                                onClick={() => setConfirmModal({
+                                  show: true,
+                                  title: 'Approve Delete Request',
+                                  message: `Are you sure you want to approve the delete request for ${clientName}? This will permanently delete the client.`,
+                                  action: 'approve',
+                                  requestId: deleteRequest._id,
+                                  isDestructive: true
+                                })}
+                                aria-label={`Approve delete request for ${clientName}`}
+                              >
+                                <FiCheck /> <span className="action-button-text">Approve</span>
+                              </button>
+                              <button
+                                className="requests-action-btn requests-action-reject"
+                                onClick={() => setConfirmModal({
+                                  show: true,
+                                  title: 'Reject Delete Request',
+                                  message: `Are you sure you want to reject the delete request for ${clientName}?`,
+                                  action: 'reject',
+                                  requestId: deleteRequest._id,
+                                  isDestructive: false
+                                })}
+                                aria-label={`Reject delete request for ${clientName}`}
+                              >
+                                <FiX /> <span className="action-button-text">Reject</span>
+                              </button>
+                            </div>
                           )}
-                        </span>
-                      </td>
-                      
-                      {/* DATE COLUMN */}
-                      <td>
-                        {deleteRequest.createdAt ? new Date(deleteRequest.createdAt).toLocaleDateString() : 'Unknown date'}
-                      </td>
-                      
-                      {/* ACTIONS COLUMN */}
-                      <td className="requests-actions-cell">
-                        {status === 'pending' && (
-                          <>
-                            <button
-                              className="requests-action-btn requests-action-approve"
-                              onClick={() => setConfirmModal({
-                                show: true,
-                                title: 'Approve Delete Request',
-                                message: `Are you sure you want to approve the delete request for ${clientName}? This will permanently delete the client.`,
-                                action: 'approve',
-                                requestId: deleteRequest._id,
-                                isDestructive: true
-                              })}
-                            >
-                              <FiCheck /> Approve
-                            </button>
-                            <button
-                              className="requests-action-btn requests-action-reject"
-                              onClick={() => setConfirmModal({
-                                show: true,
-                                title: 'Reject Delete Request',
-                                message: `Are you sure you want to reject the delete request for ${clientName}?`,
-                                action: 'reject',
-                                requestId: deleteRequest._id,
-                                isDestructive: false
-                              })}
-                            >
-                              <FiX /> Reject
-                            </button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div className="scroll-indicator">
+                <FiChevronRight /> Scroll horizontally to see more <FiChevronRight />
+              </div>
+            </>
           )}
         </div>
       </div>

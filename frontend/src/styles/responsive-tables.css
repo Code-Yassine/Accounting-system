@@ -1,0 +1,168 @@
+/* Responsive Tables CSS */
+
+/* Common responsive table styles */
+.responsive-table-container {
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1.5rem;
+}
+
+.responsive-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.responsive-table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 20px;
+}
+
+.responsive-table-container::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 20px;
+  border: 2px solid #f1f5f9;
+}
+
+.responsive-table-container::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Table styles */
+.responsive-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+  table-layout: fixed;
+}
+
+.responsive-table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* Card view for smaller screens */
+@media (max-width: 768px) {
+  /* Optional card view for very small screens */
+  .card-view-enabled .responsive-table {
+    border: none;
+  }
+  
+  .card-view-enabled .responsive-table thead {
+    display: none;
+  }
+  
+  .card-view-enabled .responsive-table tbody {
+    display: block;
+    width: 100%;
+  }
+  
+  .card-view-enabled .responsive-table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+  
+  .card-view-enabled .responsive-table td {
+    display: flex;
+    padding: 0.75rem 1rem;
+    text-align: right;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  
+  .card-view-enabled .responsive-table td:last-child {
+    border-bottom: none;
+  }
+  
+  .card-view-enabled .responsive-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-right: 1rem;
+  }
+}
+
+/* Column visibility classes */
+@media (max-width: 1024px) {
+  .hide-md {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hide-sm {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hide-xs {
+    display: none;
+  }
+  
+  .priority-1 {
+    display: table-cell;
+  }
+}
+
+/* Column width presets */
+.col-5 { width: 5%; }
+.col-10 { width: 10%; }
+.col-15 { width: 15%; }
+.col-20 { width: 20%; }
+.col-25 { width: 25%; }
+.col-30 { width: 30%; }
+.col-35 { width: 35%; }
+.col-40 { width: 40%; }
+.col-45 { width: 45%; }
+.col-50 { width: 50%; }
+
+/* Action buttons for mobile */
+@media (max-width: 480px) {
+  .action-buttons-responsive {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    justify-content: flex-end;
+  }
+  
+  .action-button-text {
+    display: none;
+  }
+}
+
+/* Responsive scrolling indicator */
+.scroll-indicator {
+  display: none;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  animation: fadeInOut 2s infinite;
+}
+
+@media (max-width: 768px) {
+  .scroll-indicator {
+    display: block;
+  }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+} 
