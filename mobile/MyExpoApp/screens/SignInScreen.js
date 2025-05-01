@@ -6,11 +6,11 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  CheckBox,
   ActivityIndicator,
   Alert,
   Platform,
 } from 'react-native';
+import { Checkbox } from 'react-native-paper';
 import { signIn, testConnection } from '../api/auth';
 
 export default function SignInScreen({ navigation }) {
@@ -184,10 +184,10 @@ export default function SignInScreen({ navigation }) {
         </View>
         <View style={styles.optionsRow}>
           <View style={styles.rememberMeRow}>
-            <CheckBox
-              value={rememberMe}
-              onValueChange={setRememberMe}
-              style={styles.checkbox}
+            <Checkbox.Item
+              label="Remember me"
+              status={rememberMe ? 'checked' : 'unchecked'}
+              onPress={() => setRememberMe(!rememberMe)}
               disabled={loading}
             />
             <Text style={styles.rememberMeText}>Remember me</Text>
