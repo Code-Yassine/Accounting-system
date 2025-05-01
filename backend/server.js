@@ -11,13 +11,13 @@ const authRoutes = require('./routes/auth');
 const accountantsRoutes = require('./routes/accountants');
 const clientsRoutes = require('./routes/clients');
 const deleteRequestsRoutes = require('./routes/deleteRequests');
-
+const mobileAuthRoutes = require('./routes/mobileAuth');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/accountants', accountantsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/deleteRequests', deleteRequestsRoutes);
-
+app.use('/api/mobile', mobileAuthRoutes);
 
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,

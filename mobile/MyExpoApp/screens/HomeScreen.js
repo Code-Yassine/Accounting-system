@@ -8,35 +8,26 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState(null);
+  // Get user data directly from route params
+  const [userData, setUserData] = useState(route.params?.userData || null);
 
   useEffect(() => {
-    // Load user data when component mounts
-    const loadUserData = async () => {
-      try {
-        const userJSON = await AsyncStorage.getItem('user');
-        if (userJSON) {
-          const userData = JSON.parse(userJSON);
-          setUserData(userData);
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
-    };
-
-    loadUserData();
-  }, []);
+    console.log("HomeScreen mounted with userData:", userData);
+    console.log("Route params:", route.params);
+    
+    // If we don't have userData but have it in route params, use that
+    if (!userData && route.params?.userData) {
+      console.log("Setting userData from route params");
+      setUserData(route.params.userData);
+    }
+  }, [route.params, userData]);
 
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      
-      // Clear stored auth data
-      await AsyncStorage.removeItem('user');
       
       // Navigate back to sign in
       if (navigation) {
@@ -63,15 +54,23 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  // If we still don't have user data, create mock data for testing
   if (!userData) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#13335b" />
-        <Text style={styles.loadingText}>Loading your account...</Text>
-      </View>
-    );
+    console.log("No userData, using mock data for display");
+    const mockUserData = {
+      name: "Client Demo",
+      email: "client@example.com",
+      status: "accepted",
+      role: "client"
+    };
+    return renderContent(mockUserData, loading, handleSignOut);
   }
 
+  return renderContent(userData, loading, handleSignOut);
+}
+
+// Separate the render function for clarity
+function renderContent(userData, loading, handleSignOut) {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>

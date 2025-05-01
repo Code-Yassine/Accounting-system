@@ -1,17 +1,15 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api'; // Replace with your backend URL
-
-export const signInClient = async (email, password) => {
+export async function signIn(email, password) {
+  const res = await fetch('http://localhost:5000/api/mobile/signin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  let data;
   try {
-    const response = await axios.post(`${API_URL}/auth/signin`, {
-      email,
-      password,
-      role: 'client' // Specify that this is a client login
-    });
-    
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: 'Network error occurred' };
+    data = await res.json();
+  } catch (jsonErr) {
+    throw new Error('Server error or invalid response.');
   }
-};
+  if (!res.ok) throw new Error(data.message || 'Sign in failed');
+  return data;
+} 

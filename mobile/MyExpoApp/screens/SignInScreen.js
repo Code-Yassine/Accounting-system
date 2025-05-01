@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,13 +7,141 @@ import {
   TouchableOpacity,
   Image,
   CheckBox,
+  ActivityIndicator,
+  Alert,
+  Platform,
 } from 'react-native';
+import { signIn, testConnection } from '../api/auth';
 
-export default function SignInScreen() {
+export default function SignInScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [serverStatus, setServerStatus] = useState('unknown'); // 'unknown', 'online', 'offline'
+
+  // Test connection when component mounts
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      // For web browsers, just set the server status to online
+      // This avoids CORS issues with the test endpoint
+      setServerStatus('online');
+    } else {
+      // For mobile, test the connection
+      const checkServerConnection = async () => {
+        try {
+          setError('');
+          const isConnected = await testConnection();
+          setServerStatus(isConnected ? 'online' : 'offline');
+          if (!isConnected) {
+            setError('Server is not available. Please try again later.');
+          }
+        } catch (err) {
+          console.error('Server check failed:', err);
+          setServerStatus('offline');
+          setError('Cannot connect to server');
+        }
+      };
+      checkServerConnection();
+    }
+  }, []);
+
+  const handleSignIn = async () => {
+    // Input validation
+    if (!email) {
+      setError('Email is required');
+      return;
+    }
+    if (!password) {
+      setError('Password is required');
+      return;
+    }
+
+    // If server is offline, first try to reconnect
+    if (serverStatus === 'offline') {
+      try {
+        setLoading(true);
+        const isConnected = await testConnection();
+        setServerStatus(isConnected ? 'online' : 'offline');
+        if (!isConnected) {
+          setLoading(false);
+          Alert.alert(
+            'Connection Error',
+            'Cannot connect to the server. Please check:\n\n' +
+            '1. The server is running\n' +
+            '2. Your device is connected to the network\n' +
+            '3. The server IP address is correct',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+      } catch (err) {
+        setLoading(false);
+        setError('Cannot connect to server');
+        return;
+      }
+    }
+
+    setError('');
+    setLoading(true);
+    
+    try {
+      console.log('Attempting sign in with:', email);
+      const userData = await signIn(email, password);
+      
+      // Sign in successful
+      console.log('Sign in successful:', userData);
+      setLoading(false);
+      
+      // Navigate to Home screen with user data
+      if (navigation) {
+        // Pass userData as a parameter to the Home screen
+        console.log('Navigating to Home with userData:', userData);
+        navigation.reset({
+          index: 0,
+          routes: [{ 
+            name: 'Home',
+            params: { userData }
+          }],
+        });
+      }
+    } catch (err) {
+      console.error('Sign in failed:', err);
+      setLoading(false);
+      
+      // Handle different types of errors
+      if (err.message && err.message.includes('Network error')) {
+        // Special handling for web platform
+        if (Platform.OS === 'web') {
+          setError('Cannot connect to server. Make sure your backend is running on localhost:5000');
+        } else {
+          // Show a detailed alert for network errors to help troubleshoot
+          Alert.alert(
+            'Connection Error',
+            'Cannot connect to the server. Please check:\n\n' +
+            '1. The server is running\n' +
+            '2. Your device is connected to the network\n' +
+            '3. The server IP address is correct',
+            [{ text: 'OK' }]
+          );
+          setError('Cannot connect to server');
+        }
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError('Sign in failed. Please check your credentials.');
+      }
+    }
+  };
+
+  // Use a different style for web
+  const webCardStyle = Platform.OS === 'web' ? {
+    width: '100%',
+    maxWidth: 400,
+    margin: '0 auto',
+  } : {};
 
   return (
     <View style={styles.root}>
@@ -22,7 +150,7 @@ export default function SignInScreen() {
         <Text style={styles.title}>Financial Experts</Text>
         <Text style={styles.subtitle}>Professional Accounting Services</Text>
       </View>
-      <View style={styles.card}>
+      <View style={[styles.card, webCardStyle]}>
         <Text style={styles.signInTitle}>Sign In</Text>
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -33,6 +161,7 @@ export default function SignInScreen() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!loading}
         />
         <Text style={styles.label}>Password</Text>
         <View style={styles.passwordRow}>
@@ -43,10 +172,12 @@ export default function SignInScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
+            editable={!loading}
           />
           <TouchableOpacity
             style={styles.eyeButton}
             onPress={() => setShowPassword((prev) => !prev)}
+            disabled={loading}
           >
             <Text style={{ color: '#b0b0b0', fontSize: 18 }}>{showPassword ? '🙈' : '👁️'}</Text>
           </TouchableOpacity>
@@ -57,15 +188,27 @@ export default function SignInScreen() {
               value={rememberMe}
               onValueChange={setRememberMe}
               style={styles.checkbox}
+              disabled={loading}
             />
             <Text style={styles.rememberMeText}>Remember me</Text>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity disabled={loading}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.signInButton}>
-          <Text style={styles.signInButtonText}>Sign In</Text>
+        
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        
+        <TouchableOpacity 
+          style={[styles.signInButton, loading && styles.signInButtonDisabled]}
+          onPress={handleSignIn}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.signInButtonText}>Sign In</Text>
+          )}
         </TouchableOpacity>
       </View>
       <View style={styles.footer}>
@@ -177,6 +320,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
+  signInButtonDisabled: {
+    backgroundColor: '#6c7687',
+  },
   signInButtonText: {
     color: '#fff',
     fontSize: 18,
@@ -191,4 +337,10 @@ const styles = StyleSheet.create({
     color: '#6c7687',
     fontSize: 14,
   },
+  errorText: {
+    color: '#dc3545',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
+  }
 }); 
