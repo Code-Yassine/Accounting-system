@@ -109,24 +109,15 @@ function renderContent(userData, loading, handleSignOut) {
         
         <View style={styles.actionGrid}>
           <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>📊</Text>
-            <Text style={styles.actionText}>Financial Reports</Text>
+            <Text style={styles.actionIcon}>📤</Text>
+            <Text style={styles.actionText}>Upload Files</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>📝</Text>
-            <Text style={styles.actionText}>Documents</Text>
+            <Text style={styles.actionIcon}>📋</Text>
+            <Text style={styles.actionText}>Upload History</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>💬</Text>
-            <Text style={styles.actionText}>Messages</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>📅</Text>
-            <Text style={styles.actionText}>Appointments</Text>
-          </TouchableOpacity>
+
         </View>
       </View>
       
