@@ -63,14 +63,14 @@ export default function HomeScreen({ navigation, route }) {
       status: "accepted",
       role: "client"
     };
-    return renderContent(mockUserData, loading, handleSignOut);
+    return renderContent(mockUserData, loading, handleSignOut, navigation);
   }
 
-  return renderContent(userData, loading, handleSignOut);
+  return renderContent(userData, loading, handleSignOut, navigation);
 }
 
 // Separate the render function for clarity
-function renderContent(userData, loading, handleSignOut) {
+function renderContent(userData, loading, handleSignOut, navigation) {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -108,7 +108,10 @@ function renderContent(userData, loading, handleSignOut) {
         <Text style={styles.sectionTitle}>Services</Text>
         
         <View style={styles.actionGrid}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Upload', { userData })}
+          >
             <Text style={styles.actionIcon}>📤</Text>
             <Text style={styles.actionText}>Upload Files</Text>
           </TouchableOpacity>
