@@ -3,9 +3,10 @@ import './AdminDashboard.css';
 import AccountantsAdmin from '../AccountantsAdmin/AccountantsAdmin';
 import ClientsAdmin from '../ClientsAdmin/ClientsAdmin';
 import RequestsAdmin from '../RequestsAdmin/RequestsAdmin';
-import { FiHome, FiUsers, FiBriefcase, FiLogOut, FiMenu, FiX, FiCheck, FiClock, FiUserCheck, FiUserX, FiInbox } from 'react-icons/fi';
+import { FiHome, FiUsers, FiBriefcase, FiLogOut, FiMenu, FiX, FiCheck, FiClock, FiUserCheck, FiUserX, FiInbox, FiChevronRight } from 'react-icons/fi';
 import { getAccountants } from '../../api/accountants';
 import { getAllClients } from '../../api/clients';
+// We'll use mock data for now instead of API calls for documents and invoices
 
 export default function AdminDashboard({ onSignOut }) {
   const [page, setPage] = useState('dashboard');
@@ -14,13 +15,39 @@ export default function AdminDashboard({ onSignOut }) {
   const profileRef = useRef(null);
   const [admin, setAdmin] = useState(null);
   const [statistics, setStatistics] = useState({
-    totalAccountants: 0,
-    activeAccountants: 0,
-    inactiveAccountants: 0,
-    totalClients: 0,
-    pendingClients: 0,
-    acceptedClients: 0,
-    rejectedClients: 0
+    totalClients: 24,
+    activeClients: 20,
+    pendingDocuments: 7,
+    paidInvoices: 15,
+    monthlyGrowth: {
+      clients: 8,
+      activeClients: 5,
+      documents: -2,
+      invoices: 12
+    },
+    clientGrowth: [12, 15, 18, 24, 21, 24],
+    recentActivity: [
+      {
+        type: 'new-client',
+        message: 'New client registered: Organic Harvest Farms',
+        date: 'Apr 18, 2023 09:30'
+      },
+      {
+        type: 'document-upload',
+        message: 'Tech Solutions Inc. uploaded Q1 Tax Documents',
+        date: 'Apr 17, 2023 14:45'
+      },
+      {
+        type: 'new-invoice',
+        message: 'New invoice created for Gourmet Delights Catering',
+        date: 'Apr 15, 2023 11:20'
+      },
+      {
+        type: 'payment',
+        message: 'Payment received from Green Earth Landscaping',
+        date: 'Apr 12, 2023 16:05'
+      }
+    ]
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -75,28 +102,13 @@ export default function AdminDashboard({ onSignOut }) {
   const loadStatistics = async () => {
     setIsLoading(true);
     try {
-      // Fetch accountants and clients data
-      const accountantsData = await getAccountants();
-      const clientsData = await getAllClients();
-      
-      // Calculate statistics
-      const activeAccountants = accountantsData.filter(acc => acc.status === 'active').length;
-      const pendingClients = clientsData.filter(client => client.status === 'pending').length;
-      const acceptedClients = clientsData.filter(client => client.status === 'accepted').length;
-      const rejectedClients = clientsData.filter(client => client.status === 'rejected').length;
-      
-      setStatistics({
-        totalAccountants: accountantsData.length,
-        activeAccountants: activeAccountants,
-        inactiveAccountants: accountantsData.length - activeAccountants,
-        totalClients: clientsData.length,
-        pendingClients: pendingClients,
-        acceptedClients: acceptedClients,
-        rejectedClients: rejectedClients
-      });
+      // In a real implementation, these would be API calls
+      // For now we'll keep the mock data in state
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     } catch (error) {
       console.error('Error loading statistics:', error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -117,6 +129,22 @@ export default function AdminDashboard({ onSignOut }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [profileOpen]);
+
+  // Function to render activity icon based on type
+  const renderActivityIcon = (type) => {
+    switch (type) {
+      case 'new-client':
+        return <div className="activity-icon client-icon">👤</div>;
+      case 'document-upload':
+        return <div className="activity-icon document-icon">📄</div>;
+      case 'new-invoice':
+        return <div className="activity-icon invoice-icon">💼</div>;
+      case 'payment':
+        return <div className="activity-icon payment-icon">💰</div>;
+      default:
+        return <div className="activity-icon">📌</div>;
+    }
+  };
 
   return (
     <div className="admin-dashboard-bg">
@@ -166,7 +194,7 @@ export default function AdminDashboard({ onSignOut }) {
       <main className="admin-dashboard-main">
         <header className="admin-dashboard-header">
           <h1>
-            {page === 'dashboard' && 'Dashboard'}
+            {page === 'dashboard' && 'Admin Dashboard'}
             {page === 'accountants' && 'Manage Accountants'}
             {page === 'clients' && 'Manage Clients'}
             {page === 'requests' && 'Manage Requests'}
@@ -194,7 +222,7 @@ export default function AdminDashboard({ onSignOut }) {
         <section className="admin-dashboard-content">
           {page === 'dashboard' && (
             <div className="dashboard-container">
-              <h2 className="dashboard-section-title">Welcome, {admin?.name || 'Administrator'}</h2>
+              {page === 'dashboard' && <p className="dashboard-subtitle">Overview of accounting management system</p>}
               
               {isLoading ? (
                 <div className="dashboard-loading">
@@ -203,74 +231,123 @@ export default function AdminDashboard({ onSignOut }) {
                 </div>
               ) : (
                 <>
-                  <div className="dashboard-stats-grid">
-                    {/* Accountants Stats */}
-                    <div className="dashboard-stat-card">
-                      <div className="stat-icon accountant-icon">
-                        <FiUsers />
+                  {/* Metrics Cards */}
+                  <div className="metrics-grid">
+                    <div className="metric-card">
+                      <div className="metric-icon client-icon">👥</div>
+                      <div className="metric-content">
+                        <h3>Total Clients</h3>
+                        <div className="metric-value">{statistics.totalClients}</div>
+                        <div className="metric-trend positive">
+                          +{statistics.monthlyGrowth.clients}% <span>since last month</span>
+                        </div>
                       </div>
-                      <div className="stat-content">
-                        <h3>Total Accountants</h3>
-                        <div className="stat-number">{statistics.totalAccountants}</div>
-                        <div className="stat-details">
-                          <div className="stat-detail">
-                            <FiUserCheck className="detail-icon active" /> {statistics.activeAccountants} Active
                           </div>
-                          <div className="stat-detail">
-                            <FiUserX className="detail-icon inactive" /> {statistics.inactiveAccountants} Inactive
-                          </div>
+                    
+                    <div className="metric-card">
+                      <div className="metric-icon active-icon">👤</div>
+                      <div className="metric-content">
+                        <h3>Active Clients</h3>
+                        <div className="metric-value">{statistics.activeClients}</div>
+                        <div className="metric-trend positive">
+                          +{statistics.monthlyGrowth.activeClients}% <span>since last month</span>
                         </div>
                       </div>
                     </div>
                     
-                    {/* Clients Stats */}
-                    <div className="dashboard-stat-card">
-                      <div className="stat-icon client-icon">
-                        <FiBriefcase />
+                    <div className="metric-card">
+                      <div className="metric-icon document-icon">📄</div>
+                      <div className="metric-content">
+                        <h3>Pending Documents</h3>
+                        <div className="metric-value">{statistics.pendingDocuments}</div>
+                        <div className="metric-trend negative">
+                          -{statistics.monthlyGrowth.documents}% <span>since last month</span>
+                        </div>
                       </div>
-                      <div className="stat-content">
-                        <h3>Total Clients</h3>
-                        <div className="stat-number">{statistics.totalClients}</div>
-                        <div className="stat-details">
-                          <div className="stat-detail">
-                            <FiCheck className="detail-icon active" /> {statistics.acceptedClients} Accepted
                           </div>
-                          <div className="stat-detail">
-                            <FiClock className="detail-icon pending" /> {statistics.pendingClients} Pending
-                          </div>
-                          <div className="stat-detail">
-                            <FiX className="detail-icon inactive" /> {statistics.rejectedClients} Rejected
-                          </div>
+                    
+                    <div className="metric-card">
+                      <div className="metric-icon invoice-icon">💳</div>
+                      <div className="metric-content">
+                        <h3>Paid Invoices</h3>
+                        <div className="metric-value">{statistics.paidInvoices}</div>
+                        <div className="metric-trend positive">
+                          +{statistics.monthlyGrowth.invoices}% <span>since last month</span>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="dashboard-actions">
-                    <button 
-                      className="accountants-btn accountants-btn-primary"
-                      onClick={() => handlePageChange('accountants')}
-                    >
-                      <FiUsers /> Manage Accountants
-                    </button>
-                    <button 
-                      className="accountants-btn accountants-btn-outline"
-                      onClick={() => handlePageChange('clients')}
-                    >
-                      <FiBriefcase /> Manage Clients
-                    </button>
+                  {/* Charts and Activity Row */}
+                  <div className="dashboard-charts-activity">
+                    {/* Client Growth Chart */}
+                    <div className="dashboard-chart-container">
+                      <div className="chart-header">
+                        <h3>Client Growth</h3>
+                        <div className="chart-period">Last 6 months</div>
+                      </div>
+                      
+                      <div className="client-chart">
+                        {/* In a real app, this would be a proper chart component */}
+                        <div className="chart-bars">
+                          {statistics.clientGrowth.map((value, index) => (
+                            <div key={index} className="chart-bar-wrapper">
+                              <div className="chart-bar" style={{ height: `${(value / 24) * 100}%` }}></div>
+                              <div className="chart-label">{index === 0 ? 'Jan' : 
+                                              index === 1 ? 'Feb' :
+                                              index === 2 ? 'Mar' :
+                                              index === 3 ? 'Apr' :
+                                              index === 4 ? 'May' : 'Jun'}</div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="chart-y-axis">
+                          <div>24</div>
+                          <div>21</div>
+                          <div>18</div>
+                          <div>15</div>
+                          <div>12</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Recent Activity */}
+                    <div className="recent-activity-container">
+                      <div className="activity-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#" className="view-all">View all <FiChevronRight /></a>
+                      </div>
+                      
+                      <div className="activity-list">
+                        {statistics.recentActivity.map((activity, index) => (
+                          <div key={index} className="activity-item">
+                            {renderActivityIcon(activity.type)}
+                            <div className="activity-content">
+                              <p className="activity-message">{activity.message}</p>
+                              <p className="activity-date">{activity.date}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
             </div>
           )}
           
-          {page === 'accountants' && <AccountantsAdmin />}
+          {page === 'accountants' && (
+            <AccountantsAdmin />
+          )}
           
-          {page === 'clients' && <ClientsAdmin />}
-
-          {page === 'requests' && <RequestsAdmin />}
+          {page === 'clients' && (
+            <ClientsAdmin />
+          )}
           
+          {page === 'requests' && (
+            <RequestsAdmin />
+          )}
         </section>
       </main>
     </div>
