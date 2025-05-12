@@ -277,158 +277,109 @@ export default function RequestsAdmin() {
   };
 
   return (
-    <div className="requests-admin">      
-      {/* Confirmation Modal */}
-      <ConfirmModal 
-        {...confirmModal}
-        onConfirm={handleConfirmAction}
-        onCancel={() => setConfirmModal({ ...confirmModal, show: false })}
-      />
-      
+    <div className="requests-admin">
       <div className="requests-container">
-        {error && <div className="requests-error">
-          <FiAlertCircle />
-          <span>{error}</span>
-        </div>}
-        
         <div className="requests-header">
           <h1 className="requests-title">Delete Requests</h1>
-          
-          <div className="requests-actions">
-            <div className="requests-search-container">
-              <span className="requests-search-icon">
-                <FiSearch />
-              </span>
-              <input
-                type="text"
-                className="requests-search"
-                placeholder="Search by client or accountant..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                aria-label="Search requests"
-              />
-            </div>
+          <p className="requests-description">Manage client deletion requests from accountants</p>
+        </div>
+
+        <div className="requests-actions">
+          <div className="requests-search-container">
+            <FiSearch className="requests-search-icon" />
+            <input
+              type="text"
+              className="requests-search"
+              placeholder="Search by client or accountant name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
-        
+
+        {error && <div className="requests-error">{error}</div>}
+
         <div className="requests-table-container">
           {filteredDeleteRequests.length === 0 ? (
-            <EmptyState 
-              isLoading={isLoading} 
-              isFiltered={searchTerm.trim() !== ''}
-            />
+            <EmptyState isLoading={isLoading} isFiltered={searchTerm.trim() !== ''} />
           ) : (
-            <>
-              <table className="requests-table ">
-                <thead>
-                  <tr>
-                    <th className="col-30">CLIENT</th>
-                    <th className="col-25 hide-sm">ACCOUNTANT</th>
-                    <th className="col-15">STATUS</th>
-                    <th className="col-15 hide-xs">DATE</th>
-                    <th className="col-15">ACTIONS</th>
+            <table className="requests-table">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Accountant</th>
+                  <th>Requested On</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredDeleteRequests.map((request) => (
+                  <tr key={request._id}>
+                    <td>
+                      <div className="requests-name">
+                        {request.clientId?.name || 'Unknown Client'}
+                      </div>
+                      <div className="requests-email">
+                        {request.clientId?.email || 'No email'}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="requests-name">
+                        {request.accountantId?.name || 'Unknown Accountant'}
+                      </div>
+                      <div className="requests-email">
+                        {request.accountantId?.email || 'No email'}
+                      </div>
+                    </td>
+                    <td>{formatDate(request.createdAt)}</td>
+                    <td>
+                      <StatusBadge status={request.status} />
+                    </td>
+                    <td className="requests-actions-cell">
+                      <button
+                        className="requests-action-btn requests-action-approve"
+                        onClick={() => setConfirmModal({
+                          show: true,
+                          title: 'Approve Delete Request',
+                          message: `Are you sure you want to approve the deletion request for ${request.clientId?.name || 'this client'}?`,
+                          action: () => handleApprove(request._id),
+                          requestId: request._id,
+                          isDestructive: true
+                        })}
+                      >
+                        <FiCheck /> Approve
+                      </button>
+                      <button
+                        className="requests-action-btn requests-action-reject"
+                        onClick={() => setConfirmModal({
+                          show: true,
+                          title: 'Reject Delete Request',
+                          message: `Are you sure you want to reject the deletion request for ${request.clientId?.name || 'this client'}?`,
+                          action: () => handleReject(request._id),
+                          requestId: request._id,
+                          isDestructive: false
+                        })}
+                      >
+                        <FiX /> Reject
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredDeleteRequests.map((deleteRequest) => {
-                    // Client info
-                    const clientName = deleteRequest.clientId && typeof deleteRequest.clientId === 'object' 
-                      ? deleteRequest.clientId.name 
-                      : 'Unknown Client';
-                    const clientEmail = deleteRequest.clientId && typeof deleteRequest.clientId === 'object' 
-                      ? deleteRequest.clientId.email 
-                      : '';
-                    
-                    // Accountant info
-                    const accountantName = deleteRequest.accountantId && typeof deleteRequest.accountantId === 'object' 
-                      ? deleteRequest.accountantId.name 
-                      : 'Unknown Accountant';
-                    const accountantEmail = deleteRequest.accountantId && typeof deleteRequest.accountantId === 'object' 
-                      ? deleteRequest.accountantId.email 
-                      : '';
-                    
-                    // Status info
-                    const status = deleteRequest.status || 'pending';
-                    
-                    return (
-                      <tr key={deleteRequest._id}>
-                        {/* CLIENT COLUMN */}
-                        <td className="requests-name" data-label="Client">
-                          <div className="client-info">
-                            <div className="client-details">
-                              {clientName}
-                              {clientEmail && <span className="requests-email">{clientEmail}</span>}
-                            </div>
-                          </div>
-                        </td>
-                        
-                        {/* ACCOUNTANT COLUMN */}
-                        <td className="requests-name hide-sm" data-label="Accountant">
-                        <div className="client-info">
-                            <div className="client-details">
-                              {accountantName}
-                              {accountantEmail && <span className="requests-email">{accountantEmail}</span>}
-                            </div>
-                          </div>
-                        </td>
-                        
-                        {/* STATUS COLUMN */}
-                        <td data-label="Status">
-                          <StatusBadge status={status} />
-                        </td>
-                        
-                        {/* DATE COLUMN */}
-                        <td className="requests-date hide-xs" data-label="Date">
-                          {formatDate(deleteRequest.createdAt)}
-                        </td>
-                        
-                        {/* ACTIONS COLUMN */}
-                        <td className="requests-actions-cell" data-label="Actions">
-                          {status === 'pending' && (
-                            <div className="action-buttons-responsive">
-                              <button
-                                className="requests-action-btn requests-action-approve"
-                                onClick={() => setConfirmModal({
-                                  show: true,
-                                  title: 'Approve Delete Request',
-                                  message: `Are you sure you want to approve the delete request for ${clientName}? This will permanently delete the client.`,
-                                  action: 'approve',
-                                  requestId: deleteRequest._id,
-                                  isDestructive: true
-                                })}
-                                aria-label={`Approve delete request for ${clientName}`}
-                              >
-                                <FiCheck /> <span className="action-button-text">Approve</span>
-                              </button>
-                              <button
-                                className="requests-action-btn requests-action-reject"
-                                onClick={() => setConfirmModal({
-                                  show: true,
-                                  title: 'Reject Delete Request',
-                                  message: `Are you sure you want to reject the delete request for ${clientName}?`,
-                                  action: 'reject',
-                                  requestId: deleteRequest._id,
-                                  isDestructive: false
-                                })}
-                                aria-label={`Reject delete request for ${clientName}`}
-                              >
-                                <FiX /> <span className="action-button-text">Reject</span>
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div className="scroll-indicator">
-                <FiChevronRight /> Scroll horizontally to see more <FiChevronRight />
-              </div>
-            </>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        show={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDestructive={confirmModal.isDestructive}
+        onConfirm={handleConfirmAction}
+        onCancel={() => setConfirmModal({ ...confirmModal, show: false })}
+      />
     </div>
   );
 }
