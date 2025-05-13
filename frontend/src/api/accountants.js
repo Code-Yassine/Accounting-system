@@ -1,5 +1,5 @@
 export async function getAccountants(search = '') {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) {
     throw new Error('Authentication required');
   }
@@ -11,8 +11,6 @@ export async function getAccountants(search = '') {
   });
 
   if (res.status === 401) {
-    // Token is invalid or expired
-    localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     throw new Error('Session expired. Please sign in again.');
   }
@@ -22,7 +20,7 @@ export async function getAccountants(search = '') {
 }
 
 export async function addAccountant({ name, email, password }) {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) {
     throw new Error('Authentication required');
   }
@@ -41,7 +39,7 @@ export async function addAccountant({ name, email, password }) {
 }
 
 export async function modifyAccountant(id, data) {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) {
     throw new Error('Authentication required');
   }
@@ -56,7 +54,6 @@ export async function modifyAccountant(id, data) {
   });
 
   if (res.status === 401) {
-    localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     throw new Error('Session expired. Please sign in again.');
   }
@@ -67,7 +64,7 @@ export async function modifyAccountant(id, data) {
 }
 
 export async function activateAccountant(id) {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) {
     throw new Error('Authentication required');
   }
@@ -80,7 +77,6 @@ export async function activateAccountant(id) {
   });
 
   if (res.status === 401) {
-    localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     throw new Error('Session expired. Please sign in again.');
   }
@@ -90,7 +86,7 @@ export async function activateAccountant(id) {
 }
 
 export async function deactivateAccountant(id) {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) {
     throw new Error('Authentication required');
   }
@@ -103,7 +99,6 @@ export async function deactivateAccountant(id) {
   });
 
   if (res.status === 401) {
-    localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     throw new Error('Session expired. Please sign in again.');
   }
@@ -113,7 +108,7 @@ export async function deactivateAccountant(id) {
 }
 
 export async function deleteAccountant(id) {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) {
     throw new Error('Authentication required');
   }
@@ -126,7 +121,6 @@ export async function deleteAccountant(id) {
   });
 
   if (res.status === 401) {
-    localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     throw new Error('Session expired. Please sign in again.');
   }

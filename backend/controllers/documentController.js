@@ -1,4 +1,4 @@
-const Document = require('../models/document');
+const Document = require('../models/Document');
 const Client = require('../models/Client');
 const Accountant = require('../models/Accountant');
 
