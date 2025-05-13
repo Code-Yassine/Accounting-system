@@ -5,17 +5,34 @@ import AccountantDashboard from './components/Dashboard/AccountantDashboard';
 
 function App() {
   const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
+    // Try to get user from sessionStorage first, then localStorage
+    const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    
+    if (!storedUser || !token) {
+      return null;
+    }
+    
+    try {
+      return JSON.parse(storedUser);
+    } catch {
+      return null;
+    }
   });
 
-  const handleSignIn = (userData) => {
+  const handleSignIn = (response) => {
+    const { token, user: userData } = response;
     setUser(userData);
   };
 
   const handleSignOut = () => {
     setUser(null);
+    // Clear both localStorage and sessionStorage
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    window.location.href = '/signin';
   };
 
   if (!user) {

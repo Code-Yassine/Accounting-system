@@ -10,15 +10,32 @@ export default function SignIn({ onSignIn }) {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const data = await signIn(email, password);
-      localStorage.setItem('user', JSON.stringify(data));
-      if (onSignIn) onSignIn(data);
+      const response = await signIn(email, password);
+      
+      // Check if we have both token and user data
+      if (!response.token || !response.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Store token and user data in localStorage
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      
+      // If "Remember me" is not checked, use sessionStorage instead
+      if (!rememberMe) {
+        sessionStorage.setItem('token', response.token);
+        sessionStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+
+      // Pass the user data to parent component
+      if (onSignIn) onSignIn(response);
     } catch (err) {
       if (err.name === 'TypeError') {
         setError('Cannot connect to backend. Is the server running?');

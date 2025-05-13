@@ -1,46 +1,49 @@
+async function getAuthHeaders() {
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
+
 export async function getAllClients(search = '') {
-  const res = await fetch(`/api/clients/all?search=${encodeURIComponent(search)}`);
+  const headers = await getAuthHeaders();
+  const res = await fetch(`http://localhost:5000/api/clients/all?search=${encodeURIComponent(search)}`, {
+    headers
+  });
   if (!res.ok) throw new Error('Failed to fetch all clients');
   return await res.json();
 }
 
 export async function getClients(search = '') {
-  // Get the current accountant's ID
-  const currentUser = 
-    JSON.parse(localStorage.getItem('user')) || 
-    JSON.parse(localStorage.getItem('accountant')) || 
-    JSON.parse(localStorage.getItem('userData')) ||
-    JSON.parse(sessionStorage.getItem('user'));
+  const headers = await getAuthHeaders();
+  const currentUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(sessionStorage.getItem('user'));
   
-  const accountantId = currentUser?._id || currentUser?.id || currentUser?.userId;
-  
+  const accountantId = currentUser?.id;
   if (!accountantId) {
     throw new Error('You must be logged in to view clients');
   }
-
-  const res = await fetch(`/api/clients?search=${encodeURIComponent(search)}&accountantId=${accountantId}`);
+  const res = await fetch(`http://localhost:5000/api/clients?search=${encodeURIComponent(search)}&accountantId=${accountantId}`, {
+    headers: await getAuthHeaders()
+  });
   if (!res.ok) throw new Error('Failed to fetch clients');
   return await res.json();
 }
 
 export async function addClient({ name, email, password }) {
-  // Try different localStorage keys where user data might be stored
-  const currentUser = 
-    JSON.parse(localStorage.getItem('user')) || 
-    JSON.parse(localStorage.getItem('accountant')) || 
-    JSON.parse(localStorage.getItem('userData')) ||
-    JSON.parse(sessionStorage.getItem('user'));
-  
-  // Check if we have a valid user object with an ID
-  const accountantId = currentUser?._id || currentUser?.id || currentUser?.userId;
-  
-  if (!accountantId) {
+  const headers = await getAuthHeaders();
+  const currentUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(sessionStorage.getItem('user'));
+  const accountantId = currentUser?.id;
+    if (!accountantId) {
     throw new Error('You must be logged in to add a client');
   }
 
-  const res = await fetch('/api/clients', {
+  const res = await fetch('http://localhost:5000/api/clients', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await getAuthHeaders(),
     body: JSON.stringify({ name, email, password, accountantId })
   });
   const data = await res.json();
@@ -49,27 +52,36 @@ export async function addClient({ name, email, password }) {
 }
 
 export async function acceptClient(id) {
-  const res = await fetch(`/api/clients/${id}/accept`, { method: 'PATCH' });
+  const res = await fetch(`http://localhost:5000/api/clients/${id}/accept`, {
+    method: 'PATCH',
+    headers: await getAuthHeaders()
+  });
   if (!res.ok) throw new Error('Failed to accept client');
   return await res.json();
 }
 
 export async function rejectClient(id) {
-  const res = await fetch(`/api/clients/${id}/reject`, { method: 'PATCH' });
+  const res = await fetch(`http://localhost:5000/api/clients/${id}/reject`, {
+    method: 'PATCH',
+    headers: await getAuthHeaders()
+  });
   if (!res.ok) throw new Error('Failed to reject client');
   return await res.json();
 }
 
 export async function deleteClient(id) {
-  const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+  const res = await fetch(`http://localhost:5000/api/clients/${id}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders()
+  });
   if (!res.ok) throw new Error('Failed to delete client');
   return await res.json();
 }
 
 export async function modifyClient(id, { name, email }) {
-  const res = await fetch(`/api/clients/${id}`, {
+  const res = await fetch(`http://localhost:5000/api/clients/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await getAuthHeaders(),
     body: JSON.stringify({ name, email })
   });
   const data = await res.json();
