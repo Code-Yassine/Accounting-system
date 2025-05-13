@@ -12,12 +12,14 @@ const accountantsRoutes = require('./routes/accountants');
 const clientsRoutes = require('./routes/clients');
 const deleteRequestsRoutes = require('./routes/deleteRequests');
 const mobileAuthRoutes = require('./routes/mobileAuth');
+const documentsRoutes = require('./routes/documents'); // Add this line
 
 app.use('/api/auth', authRoutes);
 app.use('/api/accountants', accountantsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/deleteRequests', deleteRequestsRoutes);
 app.use('/api/mobile', mobileAuthRoutes);
+app.use('/api/documents', documentsRoutes); // Add this line
 
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
