@@ -343,7 +343,7 @@ export default function RequestsAdmin() {
                           show: true,
                           title: 'Approve Delete Request',
                           message: `Are you sure you want to approve the deletion request for ${request.clientId?.name || 'this client'}?`,
-                          action: () => handleApprove(request._id),
+                          action: 'approve', // Changed from function to string
                           requestId: request._id,
                           isDestructive: true
                         })}
@@ -356,7 +356,7 @@ export default function RequestsAdmin() {
                           show: true,
                           title: 'Reject Delete Request',
                           message: `Are you sure you want to reject the deletion request for ${request.clientId?.name || 'this client'}?`,
-                          action: () => handleReject(request._id),
+                          action: 'reject', // Changed from function to string
                           requestId: request._id,
                           isDestructive: false
                         })}

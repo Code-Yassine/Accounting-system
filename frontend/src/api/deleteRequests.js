@@ -1,15 +1,13 @@
 const API_URL = '/api/deleteRequests';
 
 export async function addDeleteRequest({ clientId }) {
-  // Try different localStorage keys where user data might be stored
-  const currentUser = 
-    JSON.parse(localStorage.getItem('user')) || 
-    JSON.parse(localStorage.getItem('accountant')) || 
-    JSON.parse(localStorage.getItem('userData')) ||
-    JSON.parse(sessionStorage.getItem('user'));
-  
-  // Check if we have a valid user object with an ID
-  const accountantId = currentUser?._id || currentUser?.id || currentUser?.userId;
+  const token = sessionStorage.getItem('token');
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const currentUser = JSON.parse(sessionStorage.getItem('user'));
+  const accountantId = currentUser?._id || currentUser?.id;
   
   if (!accountantId) {
     throw new Error('You must be logged in to add a delete request');
@@ -17,7 +15,10 @@ export async function addDeleteRequest({ clientId }) {
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
     body: JSON.stringify({ clientId, accountantId })
   });
   if (!res.ok) throw new Error('Failed to add delete request');
@@ -25,15 +26,32 @@ export async function addDeleteRequest({ clientId }) {
 }
 
 export async function getDeleteRequests() {
-  const res = await fetch(API_URL);
+  const token = sessionStorage.getItem('token');
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const res = await fetch(API_URL, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
   if (!res.ok) throw new Error('Failed to fetch delete requests');
   return await res.json();
 }
 
 export async function approveDeleteRequest(id) {
+  const token = sessionStorage.getItem('token');
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
   const res = await fetch(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
     body: JSON.stringify({ status: 'approved' })
   });
   if (!res.ok) throw new Error('Failed to approve delete request');
@@ -41,9 +59,17 @@ export async function approveDeleteRequest(id) {
 }
 
 export async function rejectDeleteRequest(id) {
+  const token = sessionStorage.getItem('token');
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
   const res = await fetch(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
     body: JSON.stringify({ status: 'rejected' })
   });
   if (!res.ok) throw new Error('Failed to reject delete request');
