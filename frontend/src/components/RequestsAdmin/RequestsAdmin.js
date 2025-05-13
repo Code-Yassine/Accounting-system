@@ -58,10 +58,6 @@ function ConfirmModal({ show, title, message, isDestructive, onConfirm, onCancel
           <h3 className="modal-title">{title}</h3>
         </div>
         <div className="modal-body">
-          {isDestructive && <div className="modal-warning">
-            <FiAlertCircle size={20} />
-            <p>This action cannot be undone.</p>
-          </div>}
           <p>{message}</p>
         </div>
         <div className="modal-actions">
