@@ -9,19 +9,25 @@ import {
   Alert, 
   ActivityIndicator,
   SafeAreaView,
-  Dimensions 
+  Dimensions,
+  Image 
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { addDocument } from '../api/documents';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
 const CATEGORIES = [
-  { id: 'purchase', label: 'Purchase Invoice', icon: 'receipt-long' },
-  { id: 'sale', label: 'Sale Invoice', icon: 'point-of-sale' },
-  { id: 'payment', label: 'Payment Receipt', icon: 'payments' },
-  { id: 'delivery', label: 'Delivery Note', icon: 'local-shipping' },
+  // Purchase categories
+  { id: 'purchase_invoice', label: 'Purchase Invoice', icon: 'receipt-long', type: 'purchase' },
+  { id: 'purchase_payment', label: 'Purchase Payment Proof', icon: 'payments', type: 'purchase' },
+  { id: 'purchase_delivery', label: 'Purchase Delivery Note', icon: 'local-shipping', type: 'purchase' },
+  // Sale categories
+  { id: 'sale_invoice', label: 'Sale Invoice', icon: 'receipt-long', type: 'sale' },
+  { id: 'sale_payment', label: 'Sale Payment Proof', icon: 'payments', type: 'sale' },
+  { id: 'sale_delivery', label: 'Sale Delivery Note', icon: 'local-shipping', type: 'sale' },
 ];
 
 const UploadScreen = ({ route, navigation }) => {
@@ -32,15 +38,47 @@ const UploadScreen = ({ route, navigation }) => {
     category: '',
     date: '',
     amount: '',
-    entity: '', 
-    notes: ''
+    partyName: '',
+    reference: '',
+    notes: '',
+    partyType: 'Supplier' // Default for purchase documents
   });
+  const [showCaptureOptions, setShowCaptureOptions] = useState(false);
+
+  // Function to handle camera capture
+  const handleCameraCapture = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Camera permission is required to take photos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: true,
+      });
+
+      if (!result.canceled) {
+        const newFile = {
+          ...result.assets[0],
+          id: Math.random().toString(36).substring(7),
+          name: `camera_${Date.now()}.jpg`,
+        };
+        setSelectedFiles([...selectedFiles, newFile]);
+      }
+    } catch (error) {
+      console.error('Error capturing image:', error);
+      Alert.alert('Error', 'An error occurred while capturing the image.');
+    }
+  };
 
   // Function to pick a document
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*'], // Allow PDF and images
+        type: ['application/pdf', 'image/*'],
         multiple: true,
       });
 
@@ -62,12 +100,16 @@ const UploadScreen = ({ route, navigation }) => {
 
   // Function to handle category selection
   const selectCategory = (category) => {
-    setFileMetadata({ ...fileMetadata, category });
+    setFileMetadata(prev => ({ 
+      ...prev, 
+      category,
+      partyType: category.startsWith('purchase_') ? 'Supplier' : 'Customer'
+    }));
   };
 
   // Function to handle input change
   const handleInputChange = (field, value) => {
-    setFileMetadata({ ...fileMetadata, [field]: value });
+    setFileMetadata(prev => ({ ...prev, [field]: value }));
   };
 
   // Function to reset metadata form
@@ -76,8 +118,10 @@ const UploadScreen = ({ route, navigation }) => {
       category: '',
       date: '',
       amount: '',
-      entity: '',
-      notes: ''
+      partyName: '',
+      reference: '',
+      notes: '',
+      partyType: 'Supplier'
     });
   };
 
@@ -93,6 +137,11 @@ const UploadScreen = ({ route, navigation }) => {
       return;
     }
 
+    if (!fileMetadata.date || !fileMetadata.partyName || !fileMetadata.reference) {
+      Alert.alert('Required Fields', 'Please fill in all required fields (Date, Party Name, Reference).');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -100,15 +149,19 @@ const UploadScreen = ({ route, navigation }) => {
       for (const file of selectedFiles) {
         const documentData = {
           title: file.name,
-          description: fileMetadata.notes,
-          clientId: userData.id, // From route params
-          type: fileMetadata.category,
+          fileUrl: file.uri,
+          fileType: file.type || 'image/jpeg',
+          category: fileMetadata.category,
           metadata: {
             date: fileMetadata.date,
             amount: fileMetadata.amount,
-            entity: fileMetadata.entity,
-            originalFilename: file.name
-          }
+            partyName: fileMetadata.partyName,
+            partyType: fileMetadata.partyType,
+            reference: fileMetadata.reference,
+            notes: fileMetadata.notes
+          },
+          client: userData.id,
+          assignedAccountant: userData.assignedAccountant
         };
 
         await addDocument(documentData);
@@ -133,6 +186,35 @@ const UploadScreen = ({ route, navigation }) => {
     }
   };
 
+  // Function to render capture options modal
+  const renderCaptureOptions = () => (
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <TouchableOpacity 
+          style={styles.modalOption} 
+          onPress={() => {
+            handleCameraCapture();
+            setShowCaptureOptions(false);
+          }}
+        >
+          <MaterialIcons name="camera-alt" size={24} color="#4CAF50" />
+          <Text style={styles.modalOptionText}>Take Photo</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.modalOption} 
+          onPress={() => {
+            pickDocument();
+            setShowCaptureOptions(false);
+          }}
+        >
+          <MaterialIcons name="folder" size={24} color="#4CAF50" />
+          <Text style={styles.modalOptionText}>Choose from Gallery</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity 
@@ -147,7 +229,14 @@ const UploadScreen = ({ route, navigation }) => {
 
   const renderFileItem = (file) => (
     <View key={file.id} style={styles.fileItem}>
-      <MaterialIcons name="description" size={24} color="#4CAF50" />
+      {file.type?.startsWith('image/') ? (
+        <Image 
+          source={{ uri: file.uri }} 
+          style={styles.fileThumbnail} 
+        />
+      ) : (
+        <MaterialIcons name="description" size={24} color="#4CAF50" />
+      )}
       <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
       <TouchableOpacity 
         onPress={() => setSelectedFiles(files => files.filter(f => f.id !== file.id))}
@@ -166,17 +255,19 @@ const UploadScreen = ({ route, navigation }) => {
         <View style={styles.uploadSection}>
           <TouchableOpacity 
             style={styles.uploadArea} 
-            onPress={pickDocument}
+            onPress={() => setShowCaptureOptions(true)}
             disabled={uploading}
           >
-            <MaterialIcons name="cloud-upload" size={48} color="#4CAF50" />
+            <MaterialIcons name="add-a-photo" size={48} color="#4CAF50" />
             <Text style={styles.uploadText}>
               {selectedFiles.length > 0 
                 ? `${selectedFiles.length} file(s) selected` 
-                : 'Tap to select files'}
+                : 'Tap to add documents'}
             </Text>
           </TouchableOpacity>
         </View>
+
+        {showCaptureOptions && renderCaptureOptions()}
 
         {selectedFiles.length > 0 && (
           <View style={styles.filesSection}>
@@ -218,19 +309,6 @@ const UploadScreen = ({ route, navigation }) => {
             ))}
           </ScrollView>
 
-          {/* Input Fields with improved styling */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Amount *</Text>
-            <TextInput
-              style={styles.input}
-              value={fileMetadata.amount}
-              onChangeText={(value) => handleInputChange('amount', value)}
-              keyboardType="numeric"
-              placeholder="Enter amount"
-              placeholderTextColor="#999"
-            />
-          </View>
-
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Date *</Text>
             <TextInput
@@ -243,12 +321,35 @@ const UploadScreen = ({ route, navigation }) => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Entity Name</Text>
+            <Text style={styles.label}>{fileMetadata.partyType} Name *</Text>
             <TextInput
               style={styles.input}
-              value={fileMetadata.entity}
-              onChangeText={(value) => handleInputChange('entity', value)}
-              placeholder="Enter supplier/customer name"
+              value={fileMetadata.partyName}
+              onChangeText={(value) => handleInputChange('partyName', value)}
+              placeholder={`Enter ${fileMetadata.partyType.toLowerCase()} name`}
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Reference Number *</Text>
+            <TextInput
+              style={styles.input}
+              value={fileMetadata.reference}
+              onChangeText={(value) => handleInputChange('reference', value)}
+              placeholder="Enter document reference number"
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Amount</Text>
+            <TextInput
+              style={styles.input}
+              value={fileMetadata.amount}
+              onChangeText={(value) => handleInputChange('amount', value)}
+              keyboardType="numeric"
+              placeholder="Enter amount"
               placeholderTextColor="#999"
             />
           </View>
@@ -430,6 +531,40 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: '#ccc',
+  },
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    width: '80%',
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalOptionText: {
+    marginLeft: 16,
+    fontSize: 16,
+    color: '#333',
+  },
+  fileThumbnail: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
   },
 });
 
