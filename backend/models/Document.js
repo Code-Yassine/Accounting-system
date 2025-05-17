@@ -6,23 +6,30 @@ const documentSchema = new mongoose.Schema({
   fileType: {
     type: String,
     required: true,
-    enum: ['pdf', 'jpg', 'jpeg', 'png'] 
+    enum: ['pdf', 'jpg', 'jpeg', 'png', 'image/jpeg', 'image/png', 'application/pdf'] 
   },
   category: {
     type: String,
     required: true,
-    enum: ['Purchase', 'Sale', 'Payment Receipt', 'Delivery Note']
+    enum: [
+      'purchase_invoice',
+      'purchase_payment',
+      'purchase_delivery',
+      'sale_invoice',
+      'sale_payment',
+      'sale_delivery'
+    ]
   },
   metadata: {
     date: { type: Date, required: true },
     amount: { type: Number },
-    currency: { type: String },
-    partyName: { type: String }, // Supplier or Customer name
+    partyName: { type: String, required: true },
     partyType: {
       type: String,
+      required: true,
       enum: ['Supplier', 'Customer']
     },
-    reference: { type: String }, // Invoice/Receipt number etc
+    reference: { type: String, required: true },
     notes: { type: String }
   },
   client: {
@@ -35,12 +42,7 @@ const documentSchema = new mongoose.Schema({
     required: true,
     enum: ['new', 'in_progress', 'processed', 'rejected'],
     default: 'new'
-  },
-  assignedAccountant: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'Accountant'
-  },
-}, { timestamps: true , collection: 'document' });
+  }
+}, { timestamps: true, collection: 'document' });
 
 module.exports = mongoose.model('Document', documentSchema);

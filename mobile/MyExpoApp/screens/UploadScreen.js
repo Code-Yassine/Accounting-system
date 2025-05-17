@@ -142,6 +142,11 @@ const UploadScreen = ({ route, navigation }) => {
       return;
     }
 
+    if (!userData?.id) {
+      Alert.alert('Error', 'User information is missing. Please try logging in again.');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -159,12 +164,10 @@ const UploadScreen = ({ route, navigation }) => {
             partyType: fileMetadata.partyType,
             reference: fileMetadata.reference,
             notes: fileMetadata.notes
-          },
-          client: userData.id,
-          assignedAccountant: userData.assignedAccountant
+          }
         };
 
-        await addDocument(documentData);
+        await addDocument(documentData, userData.id);
       }
 
       Alert.alert(

@@ -1,8 +1,7 @@
 const Document = require('../models/Document');
 const Client = require('../models/Client');
-const Accountant = require('../models/Accountant');
 
-// For admin to view all documents
+// List all documents
 exports.listAllDocuments = async (req, res) => {
   try {
     const search = req.query.search || '';
@@ -19,10 +18,9 @@ exports.listAllDocuments = async (req, res) => {
         }
       : {};
     
-    // Fetch documents with populated client and accountant info
+    // Fetch documents with populated client info
     const documents = await Document.find(query)
       .populate('client', 'name')
-      .populate('assignedAccountant', 'name')
       .sort({ createdAt: -1 });
     
     res.json(documents);
@@ -32,6 +30,7 @@ exports.listAllDocuments = async (req, res) => {
   }
 };
 
+// List documents for a specific client
 exports.listDocuments = async (req, res) => {
   try {
     const search = req.query.search || '';
@@ -53,10 +52,9 @@ exports.listDocuments = async (req, res) => {
       ];
     }
     
-    // Fetch documents with populated client and accountant info
+    // Fetch documents with populated client info
     const documents = await Document.find(query)
       .populate('client', 'name')
-      .populate('assignedAccountant', 'name')
       .sort({ createdAt: -1 });
     
     res.json(documents);
@@ -69,26 +67,42 @@ exports.listDocuments = async (req, res) => {
 // Add document
 exports.addDocument = async (req, res) => {
   try {
-    const { title, fileUrl, fileType, category, metadata, client, assignedAccountant } = req.body;
+    const { 
+      title, 
+      fileUrl, 
+      fileType, 
+      category, 
+      metadata, 
+      client 
+    } = req.body;
     
     // Validate required fields
-    if (!title || !fileUrl || !fileType || !category || !client || !assignedAccountant) {
-      return res.status(400).json({ message: 'All required fields are missing' });
+    if (!title || !fileUrl || !fileType || !category || !client) {
+      return res.status(400).json({ message: 'Missing required fields' });
     }
     
     // Validate metadata
-    if (!metadata || !metadata.date) {
-      return res.status(400).json({ message: 'Document date is required in metadata' });
+    if (!metadata || !metadata.date || !metadata.partyName || !metadata.reference || !metadata.partyType) {
+      return res.status(400).json({ message: 'Missing required metadata fields' });
+    }
+
+    // Normalize file type
+    let normalizedFileType = fileType.toLowerCase();
+    if (normalizedFileType === 'image/jpeg') {
+      normalizedFileType = 'jpg';
+    } else if (normalizedFileType === 'image/png') {
+      normalizedFileType = 'png';
+    } else if (normalizedFileType === 'application/pdf') {
+      normalizedFileType = 'pdf';
     }
     
     const document = new Document({ 
       title,
       fileUrl,
-      fileType,
+      fileType: normalizedFileType,
       category,
       metadata,
       client,
-      assignedAccountant,
       status: 'new'
     });
     
@@ -96,8 +110,7 @@ exports.addDocument = async (req, res) => {
     
     // Return populated document
     const populatedDocument = await Document.findById(document._id)
-      .populate('client', 'name')
-      .populate('assignedAccountant', 'name');
+      .populate('client', 'name');
       
     res.status(201).json(populatedDocument);
   } catch (err) {
@@ -114,7 +127,7 @@ exports.setInProgress = async (req, res) => {
       id, 
       { status: 'in_progress' }, 
       { new: true }
-    ).populate('client', 'name').populate('assignedAccountant', 'name');
+    ).populate('client', 'name');
     
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
@@ -135,7 +148,7 @@ exports.setProcessed = async (req, res) => {
       id, 
       { status: 'processed' }, 
       { new: true }
-    ).populate('client', 'name').populate('assignedAccountant', 'name');
+    ).populate('client', 'name');
     
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
@@ -156,7 +169,7 @@ exports.rejectDocument = async (req, res) => {
       id, 
       { status: 'rejected' }, 
       { new: true }
-    ).populate('client', 'name').populate('assignedAccountant', 'name');
+    ).populate('client', 'name');
     
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
@@ -193,8 +206,8 @@ exports.modifyDocument = async (req, res) => {
     const { title, fileUrl, fileType, category, metadata } = req.body;
 
     // Validate metadata if provided
-    if (metadata && !metadata.date) {
-      return res.status(400).json({ message: 'Document date is required in metadata' });
+    if (metadata && (!metadata.date || !metadata.partyName || !metadata.reference || !metadata.partyType)) {
+      return res.status(400).json({ message: 'Missing required metadata fields' });
     }
 
     const document = await Document.findByIdAndUpdate(
@@ -208,7 +221,7 @@ exports.modifyDocument = async (req, res) => {
         status: 'new' 
       },
       { new: true }
-    ).populate('client', 'name').populate('assignedAccountant', 'name');
+    ).populate('client', 'name');
 
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });

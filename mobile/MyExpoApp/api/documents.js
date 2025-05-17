@@ -1,58 +1,35 @@
-async function getAuthHeaders() {
-  const token = sessionStorage.getItem('token');
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  };
-}
-
-// Get all documents (admin only)
+// Get all documents
 export async function getAllDocuments(search = '') {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`http://localhost:5000/api/documents/all?search=${encodeURIComponent(search)}`, {
-    headers
-  });
+  const res = await fetch(`http://localhost:5000/api/documents/all?search=${encodeURIComponent(search)}`);
   if (!res.ok) throw new Error('Failed to fetch all documents');
   return await res.json();
 }
 
-// Get documents for current user (accountant/client)
-export async function getDocuments(search = '') {
-  const headers = await getAuthHeaders();
-  const currentUser = JSON.parse(sessionStorage.getItem('user'));
-  
-  if (!currentUser?.id) {
-    throw new Error('You must be logged in to view documents');
+// Get documents for current user
+export async function getDocuments(search = '', clientId) {
+  if (!clientId) {
+    throw new Error('Client ID is required');
   }
 
-  const res = await fetch(`http://localhost:5000/api/documents?search=${encodeURIComponent(search)}`, {
-    headers
-  });
+  const res = await fetch(`http://localhost:5000/api/documents?search=${encodeURIComponent(search)}&clientId=${clientId}`);
   if (!res.ok) throw new Error('Failed to fetch documents');
   return await res.json();
 }
 
 // Add new document
-export async function addDocument({ title, description, clientId, type }) {
-  const headers = await getAuthHeaders();
-  const currentUser = JSON.parse(sessionStorage.getItem('user'));
-  
-  if (!currentUser?.id) {
-    throw new Error('You must be logged in to add a document');
+export async function addDocument(documentData, clientId) {
+  if (!clientId) {
+    throw new Error('Client ID is required');
   }
 
   const res = await fetch('http://localhost:5000/api/documents', {
     method: 'POST',
-    headers,
-    body: JSON.stringify({ 
-      title, 
-      description, 
-      clientId,
-      type,
-      assignedAccountant: currentUser.id 
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      ...documentData,
+      client: clientId
     })
   });
   
@@ -63,10 +40,8 @@ export async function addDocument({ title, description, clientId, type }) {
 
 // Set document status to in progress
 export async function setDocumentInProgress(id) {
-  const headers = await getAuthHeaders();
   const res = await fetch(`http://localhost:5000/api/documents/${id}/in-progress`, {
-    method: 'PATCH',
-    headers
+    method: 'PATCH'
   });
   if (!res.ok) throw new Error('Failed to update document status');
   return await res.json();
@@ -74,10 +49,8 @@ export async function setDocumentInProgress(id) {
 
 // Set document status to processed
 export async function setDocumentProcessed(id) {
-  const headers = await getAuthHeaders();
   const res = await fetch(`http://localhost:5000/api/documents/${id}/processed`, {
-    method: 'PATCH',
-    headers
+    method: 'PATCH'
   });
   if (!res.ok) throw new Error('Failed to update document status');
   return await res.json();
@@ -85,10 +58,11 @@ export async function setDocumentProcessed(id) {
 
 // Reject document
 export async function rejectDocument(id, reason) {
-  const headers = await getAuthHeaders();
   const res = await fetch(`http://localhost:5000/api/documents/${id}/reject`, {
     method: 'PATCH',
-    headers,
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify({ reason })
   });
   if (!res.ok) throw new Error('Failed to reject document');
@@ -97,10 +71,8 @@ export async function rejectDocument(id, reason) {
 
 // Delete document
 export async function deleteDocument(id) {
-  const headers = await getAuthHeaders();
   const res = await fetch(`http://localhost:5000/api/documents/${id}`, {
-    method: 'DELETE',
-    headers
+    method: 'DELETE'
   });
   if (!res.ok) throw new Error('Failed to delete document');
   return await res.json();
@@ -108,10 +80,11 @@ export async function deleteDocument(id) {
 
 // Modify document
 export async function modifyDocument(id, updates) {
-  const headers = await getAuthHeaders();
   const res = await fetch(`http://localhost:5000/api/documents/${id}`, {
     method: 'PUT',
-    headers,
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(updates)
   });
   const data = await res.json();
