@@ -116,7 +116,10 @@ function renderContent(userData, loading, handleSignOut, navigation) {
             <Text style={styles.actionText}>Upload Files</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('UploadHistory', { userData })}
+          >
             <Text style={styles.actionIcon}>📋</Text>
             <Text style={styles.actionText}>Upload History</Text>
           </TouchableOpacity>
