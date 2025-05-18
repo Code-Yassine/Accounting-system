@@ -15,6 +15,12 @@ import {
   FiLoader,
   FiAlertCircle
 } from 'react-icons/fi';
+import { 
+  getAllDocuments, 
+  setDocumentProcessed, 
+  rejectDocument, 
+  modifyDocument 
+} from '../../api/documents';
 
 // Document Viewer Modal Component
 function DocumentViewerModal({ show, document, onClose }) {
@@ -297,12 +303,7 @@ export default function DocumentsAccountant() {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/documents/all', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
+      const data = await getAllDocuments(searchTerm);
       setDocuments(data);
       setFilteredDocuments(data);
     } catch (err) {
@@ -315,16 +316,12 @@ export default function DocumentsAccountant() {
 
   const handleStatusChange = async (documentId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/documents/${documentId}/${newStatus}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        await fetchDocuments();
+      if (newStatus === 'processed') {
+        await setDocumentProcessed(documentId);
+      } else if (newStatus === 'rejected') {
+        await rejectDocument(documentId);
       }
+      await fetchDocuments();
     } catch (err) {
       setError('Failed to update document status');
       console.error('Error updating document status:', err);
@@ -336,19 +333,9 @@ export default function DocumentsAccountant() {
     setError('');
     
     try {
-      const response = await fetch(`http://localhost:5000/api/documents/${selectedDocument._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (response.ok) {
-        await fetchDocuments();
-        setIsEditModalOpen(false);
-      }
+      await modifyDocument(selectedDocument._id, formData);
+      await fetchDocuments();
+      setIsEditModalOpen(false);
     } catch (err) {
       setError('Failed to update document');
       console.error('Error updating document:', err);
