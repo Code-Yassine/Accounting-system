@@ -105,7 +105,7 @@ export async function getAllDocuments(search = '') {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: JSON.stringify(updateData)
+      body: JSON.stringify(updates)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to modify document');

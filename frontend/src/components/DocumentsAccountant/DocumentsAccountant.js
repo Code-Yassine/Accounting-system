@@ -122,7 +122,15 @@ function EditDocumentModal({ show, document, onClose, onSubmit, isLoading, error
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    // Only include fields that have been changed
+    const changedFields = {};
+    if (formData.title !== document.title) changedFields.title = formData.title;
+    if (formData.partyName !== document.metadata?.partyName) changedFields.partyName = formData.partyName;
+    if (formData.reference !== document.metadata?.reference) changedFields.reference = formData.reference;
+    if (formData.amount !== document.metadata?.amount) changedFields.amount = formData.amount;
+    if (formData.notes !== document.metadata?.notes) changedFields.notes = formData.notes;
+    
+    onSubmit(changedFields);
   };
 
   if (!show) return null;
@@ -331,13 +339,39 @@ export default function DocumentsAccountant() {
   const handleEditDocument = async (formData) => {
     setIsEditing(true);
     setError('');
-    
+
     try {
-      await modifyDocument(selectedDocument._id, formData);
+      // List all required metadata fields
+      const requiredMetadataFields = [
+        'date',
+        'amount',
+        'partyName',
+        'partyType',
+        'reference',
+        'notes'
+      ];
+
+      // Start with the current metadata
+      const currentMetadata = selectedDocument.metadata || {};
+      const updatedMetadata = { ...currentMetadata };
+
+      // Overwrite with any changed fields from the form
+      for (const key of requiredMetadataFields) {
+        if (formData[key] !== undefined) {
+          updatedMetadata[key] = formData[key];
+        }
+      }
+
+      // Prepare the update data
+      const updateData = {};
+      if (formData.title !== undefined) updateData.title = formData.title;
+      updateData.metadata = updatedMetadata; // Always send full metadata
+
+      await modifyDocument(selectedDocument._id, updateData);
       await fetchDocuments();
       setIsEditModalOpen(false);
     } catch (err) {
-      setError('Failed to update document');
+      setError(err.message || 'Failed to update document');
       console.error('Error updating document:', err);
     } finally {
       setIsEditing(false);
