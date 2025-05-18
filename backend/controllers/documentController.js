@@ -206,9 +206,21 @@ exports.modifyDocument = async (req, res) => {
     const { title, fileUrl, fileType, category, metadata } = req.body;
 
     // Validate metadata if provided
-    if (metadata && (!metadata.date || !metadata.partyName || !metadata.reference || !metadata.partyType)) {
+    if (metadata && (!metadata.date && !metadata.partyName && !metadata.reference && !metadata.partyType)) {
       return res.status(400).json({ message: 'Missing required metadata fields' });
     }
+
+    // First find the document to get current metadata
+    const existingDocument = await Document.findById(id);
+    if (!existingDocument) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    // Merge existing metadata with new metadata
+    const updatedMetadata = {
+      ...existingDocument.metadata,
+      ...metadata
+    };
 
     const document = await Document.findByIdAndUpdate(
       id,
@@ -217,15 +229,11 @@ exports.modifyDocument = async (req, res) => {
         fileUrl, 
         fileType, 
         category, 
-        metadata,
+        metadata: updatedMetadata,
         status: 'new' 
       },
       { new: true }
     ).populate('client', 'name');
-
-    if (!document) {
-      return res.status(404).json({ message: 'Document not found' });
-    }
 
     res.json(document);
   } catch (err) {
