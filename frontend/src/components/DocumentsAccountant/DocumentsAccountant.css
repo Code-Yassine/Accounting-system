@@ -1,7 +1,4 @@
 .documents-accountant {
-  padding: 24px;
-  background-color: #f8fafc;
-  min-height: 100vh;
   animation: fadeIn 0.3s ease;
 }
 
@@ -25,9 +22,8 @@
   background: var(--card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 24px;
-  transition: all 0.3s ease;
   overflow: hidden;
+  transition: box-shadow var(--transition-normal);
 }
 
 .documents-container:hover {
@@ -51,20 +47,6 @@
   color: var(--text-secondary);
   font-size: 1rem;
   margin: 0;
-}
-
-.documents-error {
-  background-color: #fee2e2;
-  color: #dc2626;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
-  animation: fadeIn 0.3s ease;
 }
 
 .documents-actions {
@@ -167,6 +149,15 @@
   border-color: #cbd5e1;
 }
 
+.documents-error {
+  color: var(--danger);
+  font-size: 0.95rem;
+  padding: 0.75rem 2rem;
+  background: rgba(220, 38, 38, 0.05);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.1);
+  animation: fadeIn 0.3s ease;
+}
+
 .documents-table-container {
   overflow-x: auto;
   padding: 0 2rem 2rem;
@@ -228,12 +219,11 @@
   font-size: 0.95rem;
 }
 
-.documents-title {
+.documents-name {
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.documents-party,
 .documents-reference {
   color: var(--text-secondary);
 }
@@ -249,11 +239,6 @@
   transition: all var(--transition-normal);
 }
 
-.documents-status-new {
-  background: rgba(207, 131, 69, 0.1);
-  color: var(--warning);
-}
-
 .documents-status-processed {
   background: rgba(16, 185, 129, 0.1);
   color: var(--success);
@@ -262,6 +247,11 @@
 .documents-status-rejected {
   background: rgba(165, 75, 75, 0.1);
   color: var(--danger);
+}
+
+.documents-status-new {
+  background: rgba(207, 131, 69, 0.1);
+  color: var(--warning);
 }
 
 .documents-actions-cell {
@@ -356,6 +346,93 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Document Viewer Modal Styling */
+.document-viewer-modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 1200px;
+  height: 90vh;
+  max-height: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.document-viewer-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.document-viewer-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.document-viewer-client {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.document-viewer-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.document-viewer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.document-viewer-btn:hover {
+  background: #f1f5f9;
+}
+
+.document-viewer-btn-close {
+  margin-left: auto;
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.document-viewer-btn-close:hover {
+  background: #b91c1c;
+}
+
+.document-viewer-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+}
+
+.document-viewer-content iframe,
+.document-viewer-content img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* Modal Styling */
@@ -454,77 +531,6 @@
   margin-top: 0.5rem;
 }
 
-/* Document Viewer Modal Styles */
-.document-viewer-modal {
-  background: white;
-  border-radius: var(--radius-lg);
-  width: 95vw;
-  height: 95vh;
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.document-viewer-header {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--border);
-  background: #f8fafc;
-}
-
-.document-viewer-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.document-viewer-controls {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.document-viewer-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all var(--transition-normal);
-  cursor: pointer;
-  background: white;
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-}
-
-.document-viewer-btn:hover {
-  background: #f8fafc;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.document-viewer-btn-close {
-  background: rgba(220, 38, 38, 0.1);
-  color: var(--danger);
-  border-color: rgba(220, 38, 38, 0.2);
-}
-
-.document-viewer-btn-close:hover {
-  background: rgba(220, 38, 38, 0.15);
-}
-
-.document-viewer-content {
-  flex: 1;
-  padding: 2rem;
-  overflow: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f8fafc;
-}
-
 /* Status Filter Buttons */
 .documents-filter-buttons {
   display: flex;
@@ -606,106 +612,82 @@
   .modal-actions {
     padding: 1.25rem;
   }
-  
-  .documents-filter-buttons {
-    margin: 0;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .documents-filter-btn {
-    flex: 1;
-    min-width: 80px;
-    justify-content: center;
-  }
-  
+
   .document-viewer-modal {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
+    width: 95%;
+    height: 95vh;
   }
-  
-  .document-viewer-header {
-    padding: 1rem;
+
+  .document-viewer-controls {
+    justify-content: center;
   }
-  
-  .document-viewer-title {
-    font-size: 1rem;
-  }
-  
-  .document-viewer-btn {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
+
+  .document-viewer-btn-close {
+    margin-left: 0;
+    width: 100%;
   }
 }
 
-@media (max-width: 480px) {
-  .documents-accountant {
-    padding: 0.5rem;
+.documents-success {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  animation: slideIn 0.3s ease;
+}
+
+.documents-success-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.documents-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: #22c55e;
+  color: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.documents-success-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.documents-success-content {
+  flex: 1;
+}
+
+.documents-success-title {
+  font-weight: 600;
+  color: #166534;
+  margin-bottom: 4px;
+}
+
+.documents-success-details {
+  font-size: 0.875rem;
+  color: #166534;
+  opacity: 0.8;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  
-  .documents-container {
-    padding: 0.5rem;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .documents-filter-btn {
-    font-size: 0.75rem;
-    padding: 0.375rem 0.5rem;
-  }
-  
-  .documents-table th,
-  .documents-table td {
-    padding: 0.5rem;
-    font-size: 0.875rem;
-  }
-  
-  .documents-status {
-    font-size: 0.75rem;
-  }
-  
-  .documents-action-btn {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-  
-  .modal {
-    width: 100%;
-    margin: 0;
-    border-radius: 0;
-    height: 100vh;
-  }
-  
-  .modal-header {
-    padding: 1rem;
-  }
-  
-  .modal-title {
-    font-size: 1rem;
-  }
-  
-  .modal-body {
-    padding: 1rem;
-  }
-  
-  .form-group {
-    margin-bottom: 1rem;
-  }
-  
-  .form-label {
-    font-size: 0.875rem;
-  }
-  
-  .form-control {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .modal-actions {
-    padding: 1rem;
-  }
-  
-  .documents-btn {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-  }
+}
+
+/* Spin animation for loading icons */
+.icon-spin {
+  animation: spin 1s linear infinite;
 }

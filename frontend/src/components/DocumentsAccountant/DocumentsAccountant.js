@@ -50,6 +50,9 @@ function DocumentViewerModal({ show, document, onClose }) {
       <div className="document-viewer-modal">
         <div className="document-viewer-header">
           <h3 className="document-viewer-title">{document.title}</h3>
+          <div className="document-viewer-client">
+            Uploaded by: <strong>{document.client?.name || 'Unknown'}</strong>
+          </div>
           <div className="document-viewer-controls">
             <button className="document-viewer-btn" onClick={handleZoomIn}>
               <FiZoomIn /> Zoom In
@@ -455,6 +458,7 @@ export default function DocumentsAccountant() {
               <thead>
                 <tr>
                   <th>TITLE</th>
+                  <th>CLIENT</th>
                   <th>PARTY NAME</th>
                   <th>REFERENCE</th>
                   <th>STATUS</th>
@@ -465,6 +469,9 @@ export default function DocumentsAccountant() {
                 {filteredDocuments.map((doc) => (
                   <tr key={doc._id}>
                     <td className="documents-title">{doc.title}</td>
+                    <td className="documents-client">
+                      {doc.client?.name || 'Unknown'}
+                    </td>
                     <td className="documents-party">{doc.metadata?.partyName}</td>
                     <td className="documents-reference">{doc.metadata?.reference}</td>
                     <td>
