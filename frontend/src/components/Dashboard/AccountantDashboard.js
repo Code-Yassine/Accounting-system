@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AccountantDashboard.css';
-import { FiHome, FiUsers, FiLogOut, FiMenu, FiX, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
+import { FiHome, FiUsers, FiLogOut, FiMenu, FiX, FiCalendar, FiDollarSign, FiFileText, FiFile } from 'react-icons/fi';
 import ClientsAccountant from '../ClientsAccountant/ClientsAccountant';
+import DocumentsAccountant from '../DocumentsAccountant/DocumentsAccountant';
 
 export default function AccountantDashboard({ onSignOut }) {
   const [page, setPage] = useState('dashboard');
@@ -49,6 +50,7 @@ export default function AccountantDashboard({ onSignOut }) {
       setSidebarOpen(false);
     }
   };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -90,6 +92,13 @@ export default function AccountantDashboard({ onSignOut }) {
           >
             <FiUsers className="sidebar-icon" /> <span>Clients</span>
           </a>
+          <a 
+            className={page === 'documents' ? 'active' : ''}
+            href="#documents"
+            onClick={(e) => { e.preventDefault(); handlePageChange('documents'); }}
+          >
+            <FiFile className="sidebar-icon" /> <span>Documents</span>
+          </a>
         </nav>
         
         <button className="admin-dashboard-signout" onClick={onSignOut}>
@@ -102,6 +111,7 @@ export default function AccountantDashboard({ onSignOut }) {
           <h1>
             {page === 'dashboard' && 'Dashboard'}
             {page === 'clients' && 'Client Management'}
+            {page === 'documents' && 'Documents Management'}
           </h1>
           <div className="admin-dashboard-user" ref={profileRef} onClick={() => setProfileOpen((open) => !open)} style={{ position: 'relative', cursor: 'pointer' }}>
             <div className="admin-dashboard-user-avatar">{getInitials()}</div>
@@ -128,7 +138,7 @@ export default function AccountantDashboard({ onSignOut }) {
            <div className="empty-dashboard">
            <div className="empty-dashboard-title">Welcome, {accountant?.name || 'Accountant'}</div>
            <p className="empty-dashboard-description">
-             Manage your clients efficiently from this dashboard. 
+             Manage your clients and documents efficiently from this dashboard. 
              Use the navigation menu to access different sections of the accountant panel.
            </p>
            <div className="empty-dashboard-actions">
@@ -138,12 +148,19 @@ export default function AccountantDashboard({ onSignOut }) {
              >
                <FiUsers /> Manage clients
              </button>
+             <button 
+               className="accountants-btn accountants-btn-primary"
+               onClick={() => handlePageChange('documents')}
+             >
+               <FiFile /> Manage documents
+             </button>
            </div>
          </div>
           )}
           {page === 'clients' && <ClientsAccountant />}
+          {page === 'documents' && <DocumentsAccountant />}
         </section>
       </main>
     </div>
   );
-} 
+}
