@@ -1,106 +1,157 @@
+// Get token from storage
+const getStoredToken = () => {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+};
+
 // Get all documents
 export async function getAllDocuments(search = '') {
-    const res = await fetch(`http://localhost:5000/api/documents/all?search=${encodeURIComponent(search)}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    if (!res.ok) throw new Error('Failed to fetch all documents');
-    return await res.json();
-  }
-  
-  // Get documents for current user
-  export async function getDocuments(search = '', clientId) {
-    if (!clientId) {
-      throw new Error('Client ID is required');
+    const token = getStoredToken();
+    if (!token) {
+        throw new Error('Authentication required');
     }
-  
-    const res = await fetch(`http://localhost:5000/api/documents?search=${encodeURIComponent(search)}&clientId=${clientId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+
+    const response = await fetch(`http://localhost:5000/api/documents/all?search=${encodeURIComponent(search)}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
     });
-    if (!res.ok) throw new Error('Failed to fetch documents');
-    return await res.json();
-  }
-  
-  // Add new document
-  export async function addDocument(documentData, clientId) {
-    if (!clientId) {
-      throw new Error('Client ID is required');
+    if (response.status === 401) {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        throw new Error('Session expired. Please sign in again.');
     }
-  
-    const res = await fetch('http://localhost:5000/api/documents', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({
-        ...documentData,
-        client: clientId
-      })
+    if (!response.ok) throw new Error('Failed to fetch all documents');
+    return await response.json();
+}
+
+// Get documents for current user
+export async function getDocuments(search = '', clientId) {
+    const token = getStoredToken();
+    if (!token) {
+        throw new Error('Authentication required');
+    }
+    if (!clientId) {
+        throw new Error('Client ID is required');
+    }
+
+    const response = await fetch(`http://localhost:5000/api/documents?search=${encodeURIComponent(search)}&clientId=${clientId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (response.status === 401) {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        throw new Error('Session expired. Please sign in again.');
+    }
+    if (!response.ok) throw new Error('Failed to fetch documents');
+    return await response.json();
+}
+
+// Add new document
+export async function addDocument(documentData, clientId) {
+    const token = getStoredToken();
+    if (!token) {
+        throw new Error('Authentication required');
+    }
+    if (!clientId) {
+        throw new Error('Client ID is required');
+    }
+
+    const response = await fetch('http://localhost:5000/api/documents', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            ...documentData,
+            client: clientId
+        })
     });
     
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to add document');
+    const data = await response.json();
+    if (response.status === 401) {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        throw new Error('Session expired. Please sign in again.');
+    }
+    if (!response.ok) throw new Error(data.message || 'Failed to add document');
     return data;
-  }
-  
-  // // Set document status to in progress
-  // export async function setDocumentInProgress(id) {
-  //   const res = await fetch(`http://localhost:5000/api/documents/${id}/in-progress`, {
-  //     method: 'PATCH',
-  //     headers: {
-  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
-  //     }
-  //   });
-  //   if (!res.ok) throw new Error('Failed to update document status');
-  //   return await res.json();
-  // }
-  
-  // Set document status to processed
-  export async function setDocumentProcessed(id) {
-    const res = await fetch(`http://localhost:5000/api/documents/${id}/processed`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+}
+
+// Set document status to processed
+export async function setDocumentProcessed(id) {
+    const token = getStoredToken();
+    if (!token) {
+        throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`http://localhost:5000/api/documents/${id}/processed`, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
     });
-    if (!res.ok) throw new Error('Failed to update document status');
-    return await res.json();
-  }
-  
-  // Reject document
-  export async function rejectDocument(id, reason) {
-    const res = await fetch(`http://localhost:5000/api/documents/${id}/reject`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ reason })
+    if (response.status === 401) {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        throw new Error('Session expired. Please sign in again.');
+    }
+    if (!response.ok) throw new Error('Failed to update document status');
+    return await response.json();
+}
+
+// Reject document
+export async function rejectDocument(id, reason) {
+    const token = getStoredToken();
+    if (!token) {
+        throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`http://localhost:5000/api/documents/${id}/reject`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason })
     });
-    if (!res.ok) throw new Error('Failed to reject document');
-    return await res.json();
-  }
-  
-  // Modify document
-  export async function modifyDocument(id, updates) {
-    const res = await fetch(`http://localhost:5000/api/documents/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(updates)
+    if (response.status === 401) {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        throw new Error('Session expired. Please sign in again.');
+    }
+    if (!response.ok) throw new Error('Failed to reject document');
+    return await response.json();
+}
+
+// Modify document
+export async function modifyDocument(id, updates) {
+    const token = getStoredToken();
+    if (!token) {
+        throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`http://localhost:5000/api/documents/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updates)
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to modify document');
+    const data = await response.json();
+    if (response.status === 401) {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        throw new Error('Session expired. Please sign in again.');
+    }
+    if (!response.ok) throw new Error(data.message || 'Failed to modify document');
     return data;
-  }
+}
   
-  // Download a single document
+// Download a single document
 export async function downloadDocument(fileUrl) {
   try {
     const response = await fetch(fileUrl);
