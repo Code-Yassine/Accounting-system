@@ -105,13 +105,12 @@ function DocumentViewerModal({ show, document, onClose }) {
 }
 
 // Edit Document Modal Component
-function EditDocumentModal({ show, document, onClose, onSubmit, isLoading, error }) {
-  const [formData, setFormData] = useState({
+function EditDocumentModal({ show, document, onClose, onSubmit, isLoading, error }) {  const [formData, setFormData] = useState({
     title: '',
     partyName: '',
     reference: '',
     amount: '',
-    notes: ''
+    date: ''
   });
 
   useEffect(() => {
@@ -121,7 +120,7 @@ function EditDocumentModal({ show, document, onClose, onSubmit, isLoading, error
         partyName: document.metadata?.partyName || '',
         reference: document.metadata?.reference || '',
         amount: document.metadata?.amount || '',
-        notes: document.metadata?.notes || ''
+        date: document.metadata?.date?.split('T')[0] || ''
       });
     }
   }, [document]);
@@ -129,12 +128,11 @@ function EditDocumentModal({ show, document, onClose, onSubmit, isLoading, error
   const handleSubmit = (e) => {
     e.preventDefault();
     // Only include fields that have been changed
-    const changedFields = {};
-    if (formData.title !== document.title) changedFields.title = formData.title;
+    const changedFields = {};    if (formData.title !== document.title) changedFields.title = formData.title;
     if (formData.partyName !== document.metadata?.partyName) changedFields.partyName = formData.partyName;
     if (formData.reference !== document.metadata?.reference) changedFields.reference = formData.reference;
     if (formData.amount !== document.metadata?.amount) changedFields.amount = formData.amount;
-    if (formData.notes !== document.metadata?.notes) changedFields.notes = formData.notes;
+    if (formData.date !== document.metadata?.date?.split('T')[0]) changedFields.date = formData.date;
     
     onSubmit(changedFields);
   };
@@ -197,21 +195,19 @@ function EditDocumentModal({ show, document, onClose, onSubmit, isLoading, error
               />
             </div>
             
-            <div className="form-group">
-              <label htmlFor="notes" className="form-label">Notes</label>
-              <textarea
-                id="notes"
+              <div className="form-group">
+              <label htmlFor="date" className="form-label">Date</label>
+              <input
+                id="date"
+                type="date"
                 className="form-control"
-                value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Enter any additional notes"
-                rows={4}
+                value={formData.date}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
               />
             </div>
             
             {error && <div className="form-error">{error}</div>}
           </div>
-          
           <div className="modal-actions">
             <button 
               type="button" 
