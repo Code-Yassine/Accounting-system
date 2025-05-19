@@ -106,7 +106,6 @@
 .documents-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   border-radius: var(--radius-md);
@@ -690,4 +689,50 @@
 /* Spin animation for loading icons */
 .icon-spin {
   animation: spin 1s linear infinite;
+}
+
+.documents-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.documents-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
+.documents-checkbox:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.documents-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.documents-btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.documents-btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.documents-btn-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }

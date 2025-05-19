@@ -111,3 +111,55 @@ export async function getAllDocuments(search = '') {
     if (!res.ok) throw new Error(data.message || 'Failed to modify document');
     return data;
   }
+  
+  // Download a single document
+export async function downloadDocument(fileUrl) {
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error('Failed to download document');
+    const blob = await response.blob();
+    const fileName = fileUrl.split('/').pop();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Error downloading document:', err);
+    throw new Error('Failed to download document');
+  }
+}
+
+// Download multiple documents as zip
+export async function downloadMultipleDocuments(documents) {
+  const JSZip = (await import('jszip')).default;
+  const zip = new JSZip();
+  
+  try {
+    // Add each file to the zip
+    for (const doc of documents) {
+      const response = await fetch(doc.fileUrl);
+      if (!response.ok) throw new Error(`Failed to download ${doc.title}`);
+      const blob = await response.blob();
+      const fileName = doc.fileUrl.split('/').pop();
+      zip.file(fileName, blob);
+    }
+    
+    // Generate and download zip file
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = window.URL.createObjectURL(content);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'documents.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Error downloading documents:', err);
+    throw new Error('Failed to download documents');
+  }
+}

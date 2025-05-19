@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './DocumentsAccountant.css';
 import { 
   FiSearch, 
@@ -10,16 +10,17 @@ import {
   FiZoomOut,
   FiRotateCcw,
   FiRotateCw,
-  FiFilter,
-  FiUpload,
+  FiDownload,
   FiLoader,
   FiAlertCircle
 } from 'react-icons/fi';
 import { 
-  getAllDocuments, 
+  getAllDocuments,
   setDocumentProcessed, 
   rejectDocument, 
-  modifyDocument 
+  modifyDocument,
+  downloadDocument,
+  downloadMultipleDocuments 
 } from '../../api/documents';
 
 // Document Viewer Modal Component
@@ -285,6 +286,8 @@ export default function DocumentsAccountant() {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState(new Set());
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -380,6 +383,55 @@ export default function DocumentsAccountant() {
     }
   };
 
+  const handleDownloadSingle = async (doc) => {
+    try {
+      setIsDownloading(true);
+      await downloadDocument(doc.fileUrl);
+    } catch (err) {
+      setError('Failed to download document');
+      console.error('Error downloading document:', err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadSelected = async () => {
+    if (selectedDocuments.size === 0) {
+      setError('Please select documents to download');
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      const docsToDownload = filteredDocuments.filter(doc => selectedDocuments.has(doc._id));
+      await downloadMultipleDocuments(docsToDownload);
+      setSelectedDocuments(new Set()); // Clear selection after download
+    } catch (err) {
+      setError('Failed to download selected documents');
+      console.error('Error downloading documents:', err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const toggleDocumentSelection = (docId) => {
+    const newSelection = new Set(selectedDocuments);
+    if (newSelection.has(docId)) {
+      newSelection.delete(docId);
+    } else {
+      newSelection.add(docId);
+    }
+    setSelectedDocuments(newSelection);
+  };
+
+  const selectAllDocuments = () => {
+    if (selectedDocuments.size === filteredDocuments.length) {
+      setSelectedDocuments(new Set());
+    } else {
+      setSelectedDocuments(new Set(filteredDocuments.map(doc => doc._id)));
+    }
+  };
+
   return (
     <div className="documents-accountant">
       {/* Document Viewer Modal */}
@@ -445,6 +497,26 @@ export default function DocumentsAccountant() {
           </div>
         </div>
         
+        <div className="documents-bulk-actions">
+          {filteredDocuments.length > 0 && (
+            <button 
+              className="documents-btn documents-btn-primary"
+              onClick={handleDownloadSelected}
+              disabled={selectedDocuments.size === 0 || isDownloading}
+            >
+              {isDownloading ? (
+                <>
+                  <FiLoader className="icon-spin" /> Downloading...
+                </>
+              ) : (
+                <>
+                  <FiDownload /> Download Selected ({selectedDocuments.size})
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        
         <div className="documents-table-container">
           {filteredDocuments.length === 0 ? (
             <EmptyState 
@@ -453,8 +525,17 @@ export default function DocumentsAccountant() {
               statusFilter={statusFilter}
             />
           ) : (
-            <table className="documents-table">              <thead>
+            <table className="documents-table">
+              <thead>
                 <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={selectedDocuments.size === filteredDocuments.length}
+                      onChange={selectAllDocuments}
+                      className="documents-checkbox"
+                    />
+                  </th>
                   <th>TITLE</th>
                   <th>CLIENT</th>
                   <th>CATEGORY</th>
@@ -466,6 +547,14 @@ export default function DocumentsAccountant() {
               <tbody>
                 {filteredDocuments.map((doc) => (
                   <tr key={doc._id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedDocuments.has(doc._id)}
+                        onChange={() => toggleDocumentSelection(doc._id)}
+                        className="documents-checkbox"
+                      />
+                    </td>
                     <td className="documents-title">{doc.title}</td>
                     <td className="documents-client">
                       {doc.client?.name || 'Unknown'}
@@ -538,6 +627,16 @@ export default function DocumentsAccountant() {
                         title="Reject document"
                       >
                         <FiX />
+                      </button>
+                      
+                      <button 
+                        className="documents-action-btn documents-action-btn-blue"
+                        onClick={() => handleDownloadSingle(doc)}
+                        disabled={isDownloading}
+                        aria-label="Download document"
+                        title="Download document"
+                      >
+                        <FiDownload />
                       </button>
                     </td>
                   </tr>
