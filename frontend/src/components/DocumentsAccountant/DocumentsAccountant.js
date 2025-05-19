@@ -252,7 +252,6 @@ function DocumentDetailsModal({ show, document, onClose }) {
   const formatDate = (date) => {
     return new Date(date).toLocaleString();
   };
-
   const sections = [
     {
       title: "General Information",
@@ -279,26 +278,10 @@ function DocumentDetailsModal({ show, document, onClose }) {
               {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
             </p>
           </div>
-        </>
-      )
-    },
-    {
-      title: "File Details",
-      content: (
-        <>
-          <div className="details-group">
-            <label>File Type</label>
-            <p>{document.fileType}</p>
-          </div>
-          
+
           <div className="details-group">
             <label>Upload Date</label>
             <p>{formatDate(document.createdAt)}</p>
-          </div>
-          
-          <div className="details-group">
-            <label>Last Modified</label>
-            <p>{formatDate(document.updatedAt)}</p>
           </div>
         </>
       )
