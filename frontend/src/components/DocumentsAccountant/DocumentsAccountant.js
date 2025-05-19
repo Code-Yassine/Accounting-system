@@ -295,14 +295,13 @@ export default function DocumentsAccountant() {
     
     if (statusFilter !== 'all') {
       filtered = filtered.filter(doc => doc.status === statusFilter);
-    }
-    
-    if (searchTerm.trim() !== '') {
+    }      if (searchTerm.trim() !== '') {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(doc => 
         doc.title.toLowerCase().includes(search) || 
-        doc.metadata?.partyName?.toLowerCase().includes(search) ||
-        doc.metadata?.reference?.toLowerCase().includes(search)
+        doc.client?.name?.toLowerCase().includes(search) ||
+        doc.category?.toLowerCase().includes(search) ||
+        new Date(doc.metadata?.date).toLocaleDateString().toLowerCase().includes(search)
       );
     }
     
@@ -411,7 +410,7 @@ export default function DocumentsAccountant() {
             <input
               type="text"
               className="documents-search"
-              placeholder="Search documents by title, party name, or reference..."
+              placeholder="Search documents by title, client, category, or date..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               aria-label="Search documents"
@@ -454,13 +453,12 @@ export default function DocumentsAccountant() {
               statusFilter={statusFilter}
             />
           ) : (
-            <table className="documents-table">
-              <thead>
+            <table className="documents-table">              <thead>
                 <tr>
                   <th>TITLE</th>
                   <th>CLIENT</th>
-                  <th>PARTY NAME</th>
-                  <th>REFERENCE</th>
+                  <th>CATEGORY</th>
+                  <th>DATE</th>
                   <th>STATUS</th>
                   <th>ACTIONS</th>
                 </tr>
@@ -472,8 +470,10 @@ export default function DocumentsAccountant() {
                     <td className="documents-client">
                       {doc.client?.name || 'Unknown'}
                     </td>
-                    <td className="documents-party">{doc.metadata?.partyName}</td>
-                    <td className="documents-reference">{doc.metadata?.reference}</td>
+                    <td className="documents-category">{doc.category}</td>
+                    <td className="documents-date">
+                      {new Date(doc.metadata?.date).toLocaleDateString()}
+                    </td>
                     <td>
                       <span className={`documents-status ${
                         doc.status === 'processed' 
