@@ -47,17 +47,17 @@ export async function getAllDocuments(search = '') {
     return data;
   }
   
-  // Set document status to in progress
-  export async function setDocumentInProgress(id) {
-    const res = await fetch(`http://localhost:5000/api/documents/${id}/in-progress`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    if (!res.ok) throw new Error('Failed to update document status');
-    return await res.json();
-  }
+  // // Set document status to in progress
+  // export async function setDocumentInProgress(id) {
+  //   const res = await fetch(`http://localhost:5000/api/documents/${id}/in-progress`, {
+  //     method: 'PATCH',
+  //     headers: {
+  //       'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //     }
+  //   });
+  //   if (!res.ok) throw new Error('Failed to update document status');
+  //   return await res.json();
+  // }
   
   // Set document status to processed
   export async function setDocumentProcessed(id) {
@@ -82,18 +82,6 @@ export async function getAllDocuments(search = '') {
       body: JSON.stringify({ reason })
     });
     if (!res.ok) throw new Error('Failed to reject document');
-    return await res.json();
-  }
-  
-  // Delete document
-  export async function deleteDocument(id) {
-    const res = await fetch(`http://localhost:5000/api/documents/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    if (!res.ok) throw new Error('Failed to delete document');
     return await res.json();
   }
   
