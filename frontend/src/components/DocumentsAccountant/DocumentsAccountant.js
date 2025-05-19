@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './DocumentsAccountant.css';
 import { 
+  FiInfo,
   FiSearch, 
   FiFileText, 
   FiCheck, 
@@ -12,7 +13,8 @@ import {
   FiRotateCw,
   FiDownload,
   FiLoader,
-  FiAlertCircle
+  FiChevronLeft,
+  FiChevronRight
 } from 'react-icons/fi';
 import { 
   getAllDocuments,
@@ -241,6 +243,162 @@ function EditDocumentModal({ show, document, onClose, onSubmit, isLoading, error
   );
 }
 
+// Document Details Modal Component
+function DocumentDetailsModal({ show, document, onClose }) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  if (!show || !document) return null;
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleString();
+  };
+
+  const sections = [
+    {
+      title: "General Information",
+      content: (
+        <>
+          <div className="details-group">
+            <label>Title</label>
+            <p>{document.title}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Client</label>
+            <p>{document.client?.name || 'Unknown'}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Category</label>
+            <p>{document.category}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Status</label>
+            <p className={`status-${document.status}`}>
+              {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
+            </p>
+          </div>
+        </>
+      )
+    },
+    {
+      title: "File Details",
+      content: (
+        <>
+          <div className="details-group">
+            <label>File Type</label>
+            <p>{document.fileType}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Upload Date</label>
+            <p>{formatDate(document.createdAt)}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Last Modified</label>
+            <p>{formatDate(document.updatedAt)}</p>
+          </div>
+        </>
+      )
+    },
+    {
+      title: "Document Metadata",
+      content: document.metadata && (
+        <>
+          <div className="details-group">
+            <label>Party Name</label>
+            <p>{document.metadata.partyName}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Party Type</label>
+            <p>{document.metadata.partyType}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Reference</label>
+            <p>{document.metadata.reference}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Amount</label>
+            <p>{document.metadata.amount}</p>
+          </div>
+          
+          <div className="details-group">
+            <label>Date</label>
+            <p>{formatDate(document.metadata.date)}</p>
+          </div>
+          
+          {document.metadata.notes && (
+            <div className="details-group full-width">
+              <label>Notes</label>
+              <p>{document.metadata.notes}</p>
+            </div>
+          )}
+        </>
+      )
+    }
+  ].filter(section => section.content);
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <div className="modal-header">
+          <h3 className="modal-title">Document Details</h3>
+        </div>
+        <div className="modal-body">
+          <div className="modal-content">
+            <div className="details-grid">
+              <h4>{sections[currentPage - 1].title}</h4>
+              {sections[currentPage - 1].content}
+            </div>
+          </div>
+          <div className="modal-pagination">
+            <div className="pagination-info">
+              {`Page ${currentPage} of ${sections.length}`}
+            </div>
+            <div className="pagination-buttons">              <button 
+                className="pagination-btn"
+                onClick={() => setCurrentPage(prev => prev - 1)}
+                disabled={currentPage === 1}
+              >
+                <FiChevronLeft /> Previous
+              </button>
+              {Array.from({length: sections.length}, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  className={`pagination-btn ${page === currentPage ? 'active' : ''}`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+              <button 
+                className="pagination-btn"
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                disabled={currentPage === sections.length}
+              >
+                Next <FiChevronRight />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="modal-actions">
+          <button 
+            className="documents-btn documents-btn-primary" 
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Empty State Component
 function EmptyState({ isLoading, isFiltered, statusFilter }) {
   if (isLoading) {
@@ -285,6 +443,7 @@ export default function DocumentsAccountant() {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState(new Set());
   const [isDownloading, setIsDownloading] = useState(false);
@@ -311,7 +470,7 @@ export default function DocumentsAccountant() {
     setFilteredDocuments(filtered);
   }, [searchTerm, statusFilter, documents]);
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
     setError('');
     
@@ -325,7 +484,7 @@ export default function DocumentsAccountant() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchTerm]);
 
   const handleStatusChange = async (documentId, newStatus) => {
     try {
@@ -449,6 +608,13 @@ export default function DocumentsAccountant() {
         onSubmit={handleEditDocument}
         isLoading={isEditing}
         error={error}
+      />
+
+      {/* Document Details Modal */}
+      <DocumentDetailsModal
+        show={isDetailsModalOpen}
+        document={selectedDocument}
+        onClose={() => setIsDetailsModalOpen(false)}
       />
       
       <div className="documents-container">
@@ -597,6 +763,18 @@ export default function DocumentsAccountant() {
                         title="View document"
                       >
                         <FiZoomIn />
+                      </button>
+                      
+                      <button 
+                        className="documents-action-btn documents-action-btn-info"
+                        onClick={() => {
+                          setSelectedDocument(doc);
+                          setIsDetailsModalOpen(true);
+                        }}
+                        aria-label="View details"
+                        title="View details"
+                      >
+                        <FiInfo />
                       </button>
                       
                       <button 
