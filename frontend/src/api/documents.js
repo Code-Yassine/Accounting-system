@@ -24,28 +24,41 @@ export async function getAllDocuments(search = '') {
     return await response.json();
 }
 
-// Get documents for current user
-export async function getDocuments(search = '', clientId) {
+// Get documents for current accountant
+export async function getMyDocuments(search = '') {
     const token = getStoredToken();
+    console.log('Auth token present:', !!token); // Will log true/false without exposing the token
     if (!token) {
         throw new Error('Authentication required');
     }
-    if (!clientId) {
-        throw new Error('Client ID is required');
-    }
 
-    const response = await fetch(`http://localhost:5000/api/documents?search=${encodeURIComponent(search)}&clientId=${clientId}`, {
+    const response = await fetch(`http://localhost:5000/api/documents/accountant?search=${encodeURIComponent(search)}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     });
+    
     if (response.status === 401) {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
         throw new Error('Session expired. Please sign in again.');
     }
-    if (!response.ok) throw new Error('Failed to fetch documents');
-    return await response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData
+        });
+        throw new Error(errorData.message || 'Failed to fetch accountant documents');
+    }
+    
+    const data = await response.json();
+    console.log('API Response:', {
+        documentsCount: data.length,
+        firstDocument: data[0] // Log first document as sample
+    });
+    return data;
 }
 
 // Add new document
