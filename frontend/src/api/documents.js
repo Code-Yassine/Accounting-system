@@ -3,27 +3,6 @@ const getStoredToken = () => {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
 };
 
-// Get all documents
-export async function getAllDocuments(search = '') {
-    const token = getStoredToken();
-    if (!token) {
-        throw new Error('Authentication required');
-    }
-
-    const response = await fetch(`http://localhost:5000/api/documents/all?search=${encodeURIComponent(search)}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-    if (response.status === 401) {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        throw new Error('Session expired. Please sign in again.');
-    }
-    if (!response.ok) throw new Error('Failed to fetch all documents');
-    return await response.json();
-}
-
 // Get documents for current accountant
 export async function getMyDocuments(search = '') {
     const token = getStoredToken();
