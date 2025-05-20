@@ -9,13 +9,18 @@ function auth(req, res, next) {
   if (!token) {
     return res.status(401).json({ message: 'Access denied. No token provided.' });
   }
-
-  try {
-    // Verify token
+  try {    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Decoded token:', {
+        id: decoded.id,
+        role: decoded.role,
+        iat: decoded.iat,
+        tokenStructure: Object.keys(decoded)
+    }); // Log token structure without sensitive data
     req.user = decoded;
     next();
   } catch (ex) {
+    console.error('Auth middleware error:', ex.message);
     res.status(401).json({ message: 'Invalid token.' });
   }
 }
