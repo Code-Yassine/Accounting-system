@@ -9,7 +9,6 @@ A comprehensive financial document management solution with web and mobile inter
 - **Multi-User System** 👥:
   - Admin Dashboard: User management and system oversight
   - Accountant Portal: Document processing and client management
-  - Client Access: Document upload and status tracking
 
 - **Document Management** 📄:
   - Document upload and categorization
@@ -24,6 +23,7 @@ A comprehensive financial document management solution with web and mobile inter
 
 ### Mobile Application 📱
 - Secure authentication
+- Client Access
 - Document upload functionality
 - Upload history tracking
 - Real-time status updates
