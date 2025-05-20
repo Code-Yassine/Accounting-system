@@ -6,8 +6,11 @@ const auth = require('../middleware/auth');
 // List all documents
 router.get('/all', auth, documentController.listAllDocuments);
 
+// Get documents for current accountant
+router.get('/accountant', auth, documentController.getDocumentsByAccountant);
+
 // List documents for a specific client
-router.get('/', auth, documentController.listDocuments);
+router.get('/', documentController.listDocuments);
 
 // Add new document
 router.post('/', auth, documentController.addDocument);

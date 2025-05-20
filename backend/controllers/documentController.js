@@ -241,3 +241,63 @@ exports.modifyDocument = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+// Get documents by accountant ID
+exports.getDocumentsByAccountant = async (req, res) => {  try {
+    console.log('=== Get Documents By Accountant ===');
+    console.log('Authenticated user:', req.user);
+    console.log('User ID type:', typeof req.user.id);
+    
+    const accountantId = req.user.id;
+    const search = req.query.search || '';
+    
+    // Debug: Verify we're getting the right accountant ID
+    console.log('Fetching documents for accountant:', accountantId);    // Get all clients assigned to this accountant
+    const clients = await Client.find({ accountantId: accountantId }).select('_id name');
+    console.log('Found clients:', clients);
+    
+    // If no clients found, check if accountant exists
+    if (!clients || clients.length === 0) {
+      console.log('Checking all clients in the system...');
+      const allClients = await Client.find({}).select('accountantId _id name');
+      console.log('All clients:', allClients);
+    }
+    
+    if (!clients || clients.length === 0) {
+      console.log('No clients found for accountant:', accountantId);
+      return res.json([]); // Return empty array if no clients found
+    }
+    
+    const clientIds = clients.map(client => client._id);
+    
+    // Build query
+    const query = {
+      client: { $in: clientIds }
+    };
+    
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { fileType: { $regex: search, $options: 'i' } },
+        { 'metadata.partyName': { $regex: search, $options: 'i' } },
+        { 'metadata.reference': { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    // Fetch documents
+    const documents = await Document.find(query)
+      .populate('client', 'name')
+      .sort({ createdAt: -1 });
+    
+    console.log('Found documents:', documents.length); // Debug: Check how many documents we found
+    
+    res.json(documents);
+  } catch (err) {
+    console.error('Error fetching documents by accountant:', err);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+};
