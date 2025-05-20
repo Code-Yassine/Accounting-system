@@ -17,7 +17,7 @@ import {
   FiChevronRight
 } from 'react-icons/fi';
 import { 
-  getAllDocuments,
+  getMyDocuments,
   setDocumentProcessed, 
   rejectDocument, 
   modifyDocument,
@@ -448,18 +448,19 @@ export default function DocumentsAccountant() {
     
     setFilteredDocuments(filtered);
   }, [searchTerm, statusFilter, documents]);
-
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
     setError('');
     
     try {
-      const data = await getAllDocuments(searchTerm);
+      console.log('Fetching documents with search term:', searchTerm);
+      const data = await getMyDocuments(searchTerm);
+      console.log('Received documents:', data);
       setDocuments(data);
       setFilteredDocuments(data);
     } catch (err) {
-      setError('Failed to fetch documents');
-      console.error('Error fetching documents:', err);
+      console.error('Detailed error:', err);
+      setError(err.message || 'Failed to fetch documents');
     } finally {
       setIsLoading(false);
     }
