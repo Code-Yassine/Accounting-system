@@ -224,6 +224,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
+    marginTop: 40, // Added top margin
   },
   header: {
     alignItems: 'center',
@@ -343,4 +344,4 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   }
-}); 
+});
