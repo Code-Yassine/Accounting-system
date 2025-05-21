@@ -1,5 +1,82 @@
 const Document = require('../models/Document');
 const Client = require('../models/Client');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function(req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+}).single('file');
+
+// Upload document
+exports.uploadDocument = (req, res) => {
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ 
+        message: 'File upload error',
+        error: err.message 
+      });
+    } else if (err) {
+      return res.status(500).json({ 
+        message: 'Server error during upload',
+        error: err.message 
+      });
+    }
+
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      let metadata;
+      try {
+        metadata = JSON.parse(req.body.metadata || '{}');
+      } catch (e) {
+        return res.status(400).json({ message: 'Invalid metadata format' });
+      }
+
+      const serverUrl = `${req.protocol}://${req.get('host')}`;
+      const fileUrl = `${serverUrl}/uploads/${req.file.filename}`;
+
+      const document = new Document({
+        title: metadata.title || req.file.originalname,
+        fileUrl: fileUrl,
+        fileType: path.extname(req.file.originalname).substring(1),
+        category: metadata.category,
+        metadata: metadata,
+        client: metadata.client,
+        status: 'new'
+      });
+
+      await document.save();
+      res.status(201).json(document);
+    } catch (error) {
+      console.error('Error creating document:', error);
+      res.status(500).json({ 
+        message: 'Error saving document to database',
+        error: error.message 
+      });
+    }
+  });
+};
 
 // List all documents
 exports.listAllDocuments = async (req, res) => {
