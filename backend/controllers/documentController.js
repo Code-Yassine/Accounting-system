@@ -78,35 +78,6 @@ exports.uploadDocument = (req, res) => {
   });
 };
 
-// List all documents
-exports.listAllDocuments = async (req, res) => {
-  try {
-    const search = req.query.search || '';
-    
-    // Build query for search
-    const query = search
-      ? {
-          $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { fileType: { $regex: search, $options: 'i' } },
-            { 'metadata.partyName': { $regex: search, $options: 'i' } },
-            { 'metadata.reference': { $regex: search, $options: 'i' } }
-          ],
-        }
-      : {};
-    
-    // Fetch documents with populated client info
-    const documents = await Document.find(query)
-      .populate('client', 'name')
-      .sort({ createdAt: -1 });
-    
-    res.json(documents);
-  } catch (err) {
-    console.error('Error fetching all documents:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
 // List documents for a specific client
 exports.listDocuments = async (req, res) => {
   try {
@@ -196,26 +167,26 @@ exports.addDocument = async (req, res) => {
   }
 };
 
-// Set document in progress
-exports.setInProgress = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const document = await Document.findByIdAndUpdate(
-      id, 
-      { status: 'in_progress' }, 
-      { new: true }
-    ).populate('client', 'name');
+// // Set document in progress
+// exports.setInProgress = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const document = await Document.findByIdAndUpdate(
+//       id, 
+//       { status: 'in_progress' }, 
+//       { new: true }
+//     ).populate('client', 'name');
     
-    if (!document) {
-      return res.status(404).json({ message: 'Document not found' });
-    }
+//     if (!document) {
+//       return res.status(404).json({ message: 'Document not found' });
+//     }
     
-    res.json(document);
-  } catch (err) {
-    console.error('Error setting document in progress:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
+//     res.json(document);
+//   } catch (err) {
+//     console.error('Error setting document in progress:', err);
+//     res.status(500).json({ message: 'Server error', error: err.message });
+//   }
+// };
 
 // Set document as processed
 exports.setProcessed = async (req, res) => {

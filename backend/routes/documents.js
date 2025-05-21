@@ -3,9 +3,6 @@ const router = express.Router();
 const documentController = require('../controllers/documentController');
 const auth = require('../middleware/auth');
 
-// List all documents
-router.get('/all', auth, documentController.listAllDocuments);
-
 // Get documents for current accountant
 router.get('/accountant', auth, documentController.getDocumentsByAccountant);
 
@@ -18,8 +15,8 @@ router.post('/upload', documentController.uploadDocument);
 // Add new document
 router.post('/', documentController.addDocument);
 
-// Set document status to in progress
-router.patch('/:id/in-progress', auth, documentController.setInProgress);
+// // Set document status to in progress
+// router.patch('/:id/in-progress', auth, documentController.setInProgress);
 
 // Set document status to processed
 router.patch('/:id/processed', auth, documentController.setProcessed);
