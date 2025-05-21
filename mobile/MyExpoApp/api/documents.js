@@ -1,9 +1,3 @@
-// Get all documents
-export async function getAllDocuments(search = '') {
-  const res = await fetch(`http://192.168.0.105:5000/api/documents/all?search=${encodeURIComponent(search)}`);
-  if (!res.ok) throw new Error('Failed to fetch all documents');
-  return await res.json();
-}
 
 // Get documents for current user
 export async function getDocuments(search = '', clientId) {
@@ -81,56 +75,27 @@ export async function addDocument(documentData, clientId) {
   }
 }
 
-// Set document status to in progress
-export async function setDocumentInProgress(id) {
-  const res = await fetch(`http://192.168.0.105:5000/api/documents/${id}/in-progress`, {
-    method: 'PATCH'
-  });
-  if (!res.ok) throw new Error('Failed to update document status');
-  return await res.json();
-}
-
-// Set document status to processed
-export async function setDocumentProcessed(id) {
-  const res = await fetch(`http://192.168.0.105:5000/api/documents/${id}/processed`, {
-    method: 'PATCH'
-  });
-  if (!res.ok) throw new Error('Failed to update document status');
-  return await res.json();
-}
-
-// Reject document
-export async function rejectDocument(id, reason) {
-  const res = await fetch(`http://192.168.0.105:5000/api/documents/${id}/reject`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ reason })
-  });
-  if (!res.ok) throw new Error('Failed to reject document');
-  return await res.json();
-}
+// feature to be added
 
 // Delete document
-export async function deleteDocument(id) {
-  const res = await fetch(`http://192.168.0.105:5000/api/documents/${id}`, {
-    method: 'DELETE'
-  });
-  if (!res.ok) throw new Error('Failed to delete document');
-  return await res.json();
-}
+// export async function deleteDocument(id) {
+//   const res = await fetch(`http://192.168.0.105:5000/api/documents/${id}`, {
+//     method: 'DELETE'
+//   });
+//   if (!res.ok) throw new Error('Failed to delete document');
+//   return await res.json();
+// }
 
-// Modify document
-export async function modifyDocument(id, updates) {
-  const res = await fetch(`http://192.168.0.105:5000/api/documents/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(updates)
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Failed to modify document');
-  return data;
-}
+// // Modify document
+// export async function modifyDocument(id, updates) {
+//   const res = await fetch(`http://192.168.0.105:5000/api/documents/${id}`, {
+//     method: 'PUT',
+//     headers: {
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify(updates)
+//   });
+//   const data = await res.json();
+//   if (!res.ok) throw new Error(data.message || 'Failed to modify document');
+//   return data;
+// }
