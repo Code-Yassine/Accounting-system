@@ -7,6 +7,7 @@ import SignInScreen from './screens/SignInScreen';
 import HomeScreen from './screens/HomeScreen';
 import UploadScreen from './screens/UploadScreen';
 import UploadHistoryScreen from './screens/UploadHistoryScreen';
+import DocumentDetailsScreen from './screens/DocumentDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +62,11 @@ export default function App() {
                 fontWeight: 'bold',
               },
             }}
+          />
+          <Stack.Screen 
+            name="DocumentDetails" 
+            component={DocumentDetailsScreen}
+            options={{ headerShown: false }}
           />
         </Stack.Navigator>
         <StatusBar style="auto" />
