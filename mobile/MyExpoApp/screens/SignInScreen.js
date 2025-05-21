@@ -190,7 +190,6 @@ export default function SignInScreen({ navigation }) {
               onPress={() => setRememberMe(!rememberMe)}
               disabled={loading}
             />
-            <Text style={styles.rememberMeText}>Remember me</Text>
           </View>
           <TouchableOpacity disabled={loading}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
