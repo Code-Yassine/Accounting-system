@@ -12,8 +12,11 @@ router.get('/accountant', auth, documentController.getDocumentsByAccountant);
 // List documents for a specific client
 router.get('/', documentController.listDocuments);
 
+// Upload document route
+router.post('/upload', documentController.uploadDocument);
+
 // Add new document
-router.post('/', auth, documentController.addDocument);
+router.post('/', documentController.addDocument);
 
 // Set document status to in progress
 router.patch('/:id/in-progress', auth, documentController.setInProgress);
