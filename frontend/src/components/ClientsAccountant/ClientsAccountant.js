@@ -509,7 +509,6 @@ export default function ClientsAccountant() {
                   <div className="clients-success-title">Delete Request Sent</div>
                   <div className="clients-success-details">
                     A delete request has been created and is pending admin approval.
-                    The client will remain in the system until the request is approved.
                   </div>
                 </div>
               </div>
