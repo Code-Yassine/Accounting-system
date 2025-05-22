@@ -147,7 +147,7 @@ export default function SignInScreen({ navigation }) {
     <View style={styles.root}>
       <View style={styles.header}>
         <Image source={require('../assets/image.png')} style={styles.logo} />
-        <Text style={styles.title}>Financial Experts</Text>
+        <Text style={styles.title}>FinBooks</Text>
         <Text style={styles.subtitle}>Professional Accounting Services</Text>
       </View>
       <View style={[styles.card, webCardStyle]}>
