@@ -121,11 +121,9 @@ JWT_SECRET=your_jwt_secret
 - DELETE /api/clients/:id - Remove client
 
 ## Key Features 🔑
-- **Secure Authentication**: JWT-based authentication system
-- **Role-Based Access**: Different permissions for admin, accountant, and client
+- **Secure Authentication**: JWT-based authentication system for the mobile
 - **Document Processing**: Complete document lifecycle management
 - **Real-time Updates**: Instant status updates for all users
-- **Mobile Integration**: Companion app for document upload
 - **Search & Filter**: Advanced document search capabilities
 - **Responsive Design**: Works on all devices and screen sizes
 
