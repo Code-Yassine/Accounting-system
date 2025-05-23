@@ -10,7 +10,7 @@ exports.signIn = async (req, res) => {
     if (user) {
       if (password !== user.password) return res.status(400).json({ message: 'Invalid credentials' });
 
-      const token = jwt.sign({ id: user._id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user._id, role: 'admin' }, process.env.JWT_SECRET);
 
       return res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: 'admin' } });
     }
@@ -24,7 +24,7 @@ exports.signIn = async (req, res) => {
       const match = await bcrypt.compare(password, user.password);
       if (!match) return res.status(400).json({ message: 'Invalid credentials' });
 
-      const token = jwt.sign({ id: user._id, role: 'accountant' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user._id, role: 'accountant' }, process.env.JWT_SECRET);
 
       return res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: 'accountant' } });
     }
