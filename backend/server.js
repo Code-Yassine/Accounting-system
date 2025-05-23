@@ -45,3 +45,13 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// Centralized error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Centralized error handler:', err);
+  const status = err.status || 500;
+  res.status(status).json({
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});

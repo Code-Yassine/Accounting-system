@@ -274,6 +274,14 @@ export default function RequestsAdmin() {
 
   return (
     <div className="requests-admin">
+      {/* Error Alert */}
+      {error && (
+        <div className="requests-error" role="alert">
+          <span>{error}</span>
+          <button className="requests-error-close" onClick={() => setError('')} aria-label="Dismiss error">&times;</button>
+        </div>
+      )}
+
       <div className="requests-container">
         <div className="requests-header">
           <h1 className="requests-title">Delete Requests</h1>
