@@ -1,3 +1,4 @@
+import API_URL from './config';
 
 // Get documents for current user
 export async function getDocuments(search = '', clientId) {
@@ -5,7 +6,7 @@ export async function getDocuments(search = '', clientId) {
     throw new Error('Client ID is required');
   }
 
-  const res = await fetch(`http://192.168.0.105:5000/api/documents?search=${encodeURIComponent(search)}&clientId=${clientId}`);
+  const res = await fetch(`${API_URL}/api/documents?search=${encodeURIComponent(search)}&clientId=${clientId}`);
   if (!res.ok) throw new Error('Failed to fetch documents');
   return await res.json();
 }
@@ -54,7 +55,7 @@ export async function addDocument(documentData, clientId) {
       name: filename
     });
 
-    const res = await fetch('http://192.168.0.105:5000/api/documents/upload', {
+    const res = await fetch(`${API_URL}/api/documents/upload`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
