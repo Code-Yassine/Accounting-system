@@ -17,7 +17,7 @@ export default function SignInScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  // const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [serverStatus, setServerStatus] = useState('unknown'); // 'unknown', 'online', 'offline'
@@ -182,7 +182,7 @@ export default function SignInScreen({ navigation }) {
             <Text style={{ color: '#b0b0b0', fontSize: 18 }}>{showPassword ? '🙈' : '👁️'}</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.optionsRow}>
+        {/* <View style={styles.optionsRow}>
           <View style={styles.rememberMeRow}>
             <Checkbox.Item
               label="Remember me"
@@ -194,7 +194,7 @@ export default function SignInScreen({ navigation }) {
           <TouchableOpacity disabled={loading}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
         
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
         

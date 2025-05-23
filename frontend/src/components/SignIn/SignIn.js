@@ -104,7 +104,7 @@ export default function SignIn({ onSignIn }) {
             </div>
 
             <div className="signin-options">
-              <label className="signin-checkbox-wrapper">
+              {/* <label className="signin-checkbox-wrapper">
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -113,7 +113,7 @@ export default function SignIn({ onSignIn }) {
                 />
                 <span className="signin-checkbox-label">Remember me</span>
               </label>
-              <a href="#" className="signin-forgot-link">Forgot password?</a>
+              <a href="#" className="signin-forgot-link">Forgot password?</a> */}
             </div>
 
             {error && <div className="signin-error">{error}</div>}
