@@ -1,3 +1,5 @@
+import API_URL from './config';
+
 // Get token from storage
 const getStoredToken = () => {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -11,7 +13,7 @@ export async function getMyDocuments(search = '') {
         throw new Error('Authentication required');
     }
 
-    const response = await fetch(`http://localhost:5000/api/documents/accountant?search=${encodeURIComponent(search)}`, {
+    const response = await fetch(`${API_URL}/api/documents/accountant?search=${encodeURIComponent(search)}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -50,7 +52,7 @@ export async function addDocument(documentData, clientId) {
         throw new Error('Client ID is required');
     }
 
-    const response = await fetch('http://localhost:5000/api/documents', {
+    const response = await fetch(`${API_URL}/api/documents`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -79,7 +81,7 @@ export async function setDocumentProcessed(id) {
         throw new Error('Authentication required');
     }
 
-    const response = await fetch(`http://localhost:5000/api/documents/${id}/processed`, {
+    const response = await fetch(`${API_URL}/api/documents/${id}/processed`, {
         method: 'PATCH',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -101,7 +103,7 @@ export async function rejectDocument(id, reason) {
         throw new Error('Authentication required');
     }
 
-    const response = await fetch(`http://localhost:5000/api/documents/${id}/reject`, {
+    const response = await fetch(`${API_URL}/api/documents/${id}/reject`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -125,7 +127,7 @@ export async function modifyDocument(id, updates) {
         throw new Error('Authentication required');
     }
 
-    const response = await fetch(`http://localhost:5000/api/documents/${id}`, {
+    const response = await fetch(`${API_URL}/api/documents/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

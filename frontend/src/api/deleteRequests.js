@@ -1,4 +1,6 @@
-const API_URL = '/api/deleteRequests';
+import API_URL from './config';
+
+const DELETE_REQUESTS_URL = `${API_URL}/api/deleteRequests`;
 
 export async function addDeleteRequest({ clientId }) {
   const token = sessionStorage.getItem('token');
@@ -13,7 +15,7 @@ export async function addDeleteRequest({ clientId }) {
     throw new Error('You must be logged in to add a delete request');
   }
 
-  const res = await fetch(API_URL, {
+  const res = await fetch(DELETE_REQUESTS_URL, {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json',
@@ -31,7 +33,7 @@ export async function getDeleteRequests() {
     throw new Error('Authentication required');
   }
 
-  const res = await fetch(API_URL, {
+  const res = await fetch(DELETE_REQUESTS_URL, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -46,7 +48,7 @@ export async function approveDeleteRequest(id) {
     throw new Error('Authentication required');
   }
 
-  const res = await fetch(`${API_URL}/${id}`, {
+  const res = await fetch(`${DELETE_REQUESTS_URL}/${id}`, {
     method: 'PATCH',
     headers: { 
       'Content-Type': 'application/json',
@@ -64,7 +66,7 @@ export async function rejectDeleteRequest(id) {
     throw new Error('Authentication required');
   }
 
-  const res = await fetch(`${API_URL}/${id}`, {
+  const res = await fetch(`${DELETE_REQUESTS_URL}/${id}`, {
     method: 'PATCH',
     headers: { 
       'Content-Type': 'application/json',
