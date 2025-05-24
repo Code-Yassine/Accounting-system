@@ -151,6 +151,7 @@ REACT_APP_API_URL=your_URL_API
 - **Search & Filter**: Advanced document search capabilities
 - **Responsive Design**: Works on all devices and screen sizes
 - **Centralized Error Handling**: Consistent error responses across backend and frontend
+- **Auto-fields for the metadata if client select a document
 
 ---
 
