@@ -160,7 +160,6 @@ REACT_APP_API_URL=your_URL_API
 - Role-based access control
 - Secure password hashing
 - Protected routes
-- CORS protection
 
 ---
 
