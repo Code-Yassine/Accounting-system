@@ -20,7 +20,6 @@ A comprehensive financial document management solution with web and mobile inter
   - Account creation, activation/deactivation, and delete request handling
 - **Security** 🔒
   - JWT authentication, protected routes, and input validation
-  - Rate limiting and CORS protection
 - **Real-time Updates**
   - Instant status
 
