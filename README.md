@@ -89,8 +89,10 @@ expo start
 MONGODB_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
 ```
-
----
+### frontend (.env)
+```
+REACT_APP_API_URL=your_URL_API
+```
 
 ## 📁 Project Structure
 ```
