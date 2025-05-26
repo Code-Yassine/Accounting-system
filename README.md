@@ -20,7 +20,6 @@ A comprehensive financial document management solution with web and mobile inter
   - Account creation, activation/deactivation, and delete request handling
 - **Security** 🔒
   - JWT authentication, protected routes, and input validation
-  - Rate limiting and CORS protection
 - **Real-time Updates**
   - Instant status
 
@@ -89,8 +88,10 @@ expo start
 MONGODB_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
 ```
-
----
+### frontend (.env)
+```
+REACT_APP_API_URL=your_URL_API
+```
 
 ## 📁 Project Structure
 ```
@@ -149,6 +150,7 @@ JWT_SECRET=your_jwt_secret
 - **Search & Filter**: Advanced document search capabilities
 - **Responsive Design**: Works on all devices and screen sizes
 - **Centralized Error Handling**: Consistent error responses across backend and frontend
+- **Auto-fields for the metadata if client select a document
 
 ---
 
@@ -157,7 +159,6 @@ JWT_SECRET=your_jwt_secret
 - Role-based access control
 - Secure password hashing
 - Protected routes
-- CORS protection
 
 ---
 
