@@ -923,3 +923,33 @@ body, html {
     grid-template-columns: 1fr;
   }
 }
+
+.admin-dashboard-profile-actions {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.admin-dashboard-profile-signout {
+  width: 100%;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.admin-dashboard-profile-signout:hover {
+  background: rgba(220, 38, 38, 0.2);
+}
+
+.admin-dashboard-profile-signout svg {
+  font-size: 1.1rem;
+}

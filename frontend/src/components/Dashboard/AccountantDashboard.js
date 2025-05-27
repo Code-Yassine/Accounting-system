@@ -128,6 +128,14 @@ export default function AccountantDashboard({ onSignOut }) {
                     </div>
                   </div>
                 </div>
+                <div className="admin-dashboard-profile-actions">
+                  <button 
+                    className="admin-dashboard-profile-signout"
+                    onClick={onSignOut}
+                  >
+                    <FiLogOut /> Sign out
+                  </button>
+                </div>
               </div>
             )}
           </div>
