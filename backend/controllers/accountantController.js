@@ -36,7 +36,7 @@ exports.addAccountant = async (req, res) => {
     await accountant.save();
     res.status(201).json(accountant);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error 1' });
   }
 };
 
