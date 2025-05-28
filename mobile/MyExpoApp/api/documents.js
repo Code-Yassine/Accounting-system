@@ -12,7 +12,7 @@ export async function getDocuments(search = '', clientId) {
 }
 
 // Add new document
-export async function addDocument(documentData, clientId) {
+export async function addDocument(documentData, clientId, justificationFileUri = null) {
   if (!clientId) {
     throw new Error('Client ID is required');
   }
@@ -69,6 +69,18 @@ export async function addDocument(documentData, clientId) {
     }
 
     const data = await res.json();
+
+    // If justification file is provided, upload it
+    if (justificationFileUri) {
+      try {
+        await uploadJustificationDocument(data._id, justificationFileUri);
+        console.log('Justification document uploaded successfully');
+      } catch (justificationError) {
+        console.error('Error uploading justification document:', justificationError);
+        // Don't throw the error, just log it since the main document was uploaded successfully
+      }
+    }
+
     return data;
   } catch (error) {
     console.error('Upload error:', error);
@@ -76,7 +88,62 @@ export async function addDocument(documentData, clientId) {
   }
 }
 
-// feature to be added
+// Upload justification document
+export async function uploadJustificationDocument(documentId, fileUri) {
+  try {
+    // Create form data for file upload
+    const formData = new FormData();
+    
+    // Get file extension from the URI
+    const extension = fileUri.split('.').pop().toLowerCase();
+    
+    // Determine correct mime type
+    const mimeType = extension === 'pdf' ? 'application/pdf' : 
+                    (extension === 'jpg' || extension === 'jpeg') ? 'image/jpeg' :
+                    extension === 'png' ? 'image/png' : 
+                    'application/octet-stream';
+
+    formData.append('file', {
+      uri: fileUri,
+      type: mimeType,
+      name: `justification.${extension}`,
+    });
+
+    formData.append('documentId', documentId);
+
+    console.log('Uploading justification document:', {
+      uri: fileUri,
+      type: mimeType,
+      documentId
+    });
+
+    const res = await fetch(`${API_URL}/api/justification-documents/upload`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+      },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Failed to upload justification document');
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('Upload error:', error);
+    throw error;
+  }
+}
+
+// Get justification document
+export async function getJustificationDocument(documentId) {
+  const res = await fetch(`${API_URL}/api/justification-documents/document/${documentId}`);
+  if (!res.ok) throw new Error('Failed to fetch justification document');
+  return await res.json();
+}
 
 // Delete document
 // export async function deleteDocument(id) {

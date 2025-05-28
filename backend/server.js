@@ -12,6 +12,12 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+// Create justifications directory if it doesn't exist
+const justificationsDir = path.join(__dirname, 'uploads/justifications');
+if (!fs.existsSync(justificationsDir)) {
+  fs.mkdirSync(justificationsDir, { recursive: true });
+}
+
 // Increase payload size limits for JSON and URL-encoded data
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -26,14 +32,16 @@ const accountantsRoutes = require('./routes/accountants');
 const clientsRoutes = require('./routes/clients');
 const deleteRequestsRoutes = require('./routes/deleteRequests');
 const mobileAuthRoutes = require('./routes/mobileAuth');
-const documentsRoutes = require('./routes/documents'); // Add this line
+const documentsRoutes = require('./routes/documents');
+const justificationDocumentsRoutes = require('./routes/justificationDocuments');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/accountants', accountantsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/deleteRequests', deleteRequestsRoutes);
 app.use('/api/mobile', mobileAuthRoutes);
-app.use('/api/documents', documentsRoutes); // Add this line
+app.use('/api/documents', documentsRoutes);
+app.use('/api/justification-documents', justificationDocumentsRoutes);
 
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,

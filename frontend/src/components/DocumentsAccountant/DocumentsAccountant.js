@@ -14,7 +14,8 @@ import {
   FiDownload,
   FiLoader,
   FiChevronLeft,
-  FiChevronRight
+  FiChevronRight,
+  FiFile
 } from 'react-icons/fi';
 import { 
   getMyDocuments,
@@ -22,7 +23,8 @@ import {
   rejectDocument, 
   modifyDocument,
   downloadDocument,
-  downloadMultipleDocuments 
+  downloadMultipleDocuments,
+  getJustificationDocument
 } from '../../api/documents';
 
 // Document Viewer Modal Component
@@ -378,6 +380,117 @@ function DocumentDetailsModal({ show, document, onClose }) {
   );
 }
 
+// Justification Document Viewer Modal Component
+function JustificationViewerModal({ show, document, onClose }) {
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [justification, setJustification] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (show && document) {
+      setLoading(true);
+      getJustificationDocument(document._id)
+        .then(data => {
+          setJustification(data);
+          setError('');
+        })
+        .catch(err => {
+          setError(err.message);
+          setJustification(null);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [show, document]);
+
+  if (!show || !document) return null;
+
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 0.1, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 0.1, 0.5));
+  };
+
+  const handleRotateLeft = () => {
+    setRotation(prev => (prev - 90) % 360);
+  };
+
+  const handleRotateRight = () => {
+    setRotation(prev => (prev + 90) % 360);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="document-viewer-modal">
+        <div className="document-viewer-header">
+          <h3 className="document-viewer-title">Justification Document</h3>
+          <div className="document-viewer-controls">
+            <button className="document-viewer-btn" onClick={handleZoomIn}>
+              <FiZoomIn /> Zoom In
+            </button>
+            <button className="document-viewer-btn" onClick={handleZoomOut}>
+              <FiZoomOut /> Zoom Out
+            </button>
+            <button className="document-viewer-btn" onClick={handleRotateLeft}>
+              <FiRotateCcw /> Rotate Left
+            </button>
+            <button className="document-viewer-btn" onClick={handleRotateRight}>
+              <FiRotateCw /> Rotate Right
+            </button>
+            <button className="document-viewer-btn document-viewer-btn-close" onClick={onClose}>
+              <FiX /> Close
+            </button>
+          </div>
+        </div>
+        <div className="document-viewer-content">
+          {loading ? (
+            <div className="documents-loading">
+              <div className="documents-loading-spinner"></div>
+              <p>Loading justification document...</p>
+            </div>
+          ) : error ? (
+            <div className="documents-error">
+              <p>{error}</p>
+            </div>
+          ) : justification ? (
+            justification.fileType === 'pdf' ? (
+              <iframe
+                src={justification.fileUrl}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                  transformOrigin: 'center center'
+                }}
+                title="Justification Document"
+              />
+            ) : (
+              <img
+                src={justification.fileUrl}
+                alt="Justification Document"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                  transformOrigin: 'center center'
+                }}
+              />
+            )
+          ) : (
+            <div className="documents-empty">
+              <FiFileText />
+              <p>No justification document found</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Empty State Component
 function EmptyState({ isLoading, isFiltered, statusFilter }) {
   if (isLoading) {
@@ -426,6 +539,7 @@ export default function DocumentsAccountant() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState(new Set());
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isJustificationViewerOpen, setIsJustificationViewerOpen] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -595,6 +709,13 @@ export default function DocumentsAccountant() {
         show={isDetailsModalOpen}
         document={selectedDocument}
         onClose={() => setIsDetailsModalOpen(false)}
+      />
+      
+      {/* Justification Document Viewer Modal */}
+      <JustificationViewerModal
+        show={isJustificationViewerOpen}
+        document={selectedDocument}
+        onClose={() => setIsJustificationViewerOpen(false)}
       />
       
       <div className="documents-container">
@@ -795,6 +916,18 @@ export default function DocumentsAccountant() {
                         title="Download document"
                       >
                         <FiDownload />
+                      </button>
+                      
+                      <button 
+                        className="documents-action-btn documents-action-btn-info"
+                        onClick={() => {
+                          setSelectedDocument(doc);
+                          setIsJustificationViewerOpen(true);
+                        }}
+                        aria-label="View justification"
+                        title="View justification"
+                      >
+                        <FiFile />
                       </button>
                     </td>
                   </tr>

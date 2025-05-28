@@ -196,3 +196,61 @@ export async function downloadMultipleDocuments(documents) {
     throw new Error('Failed to download documents');
   }
 }
+
+// Get justification document for a document
+export async function getJustificationDocument(documentId) {
+  const token = getStoredToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(`${API_URL}/api/justification-documents/document/${documentId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    throw new Error('Session expired. Please sign in again.');
+  }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to fetch justification document');
+  }
+  
+  return await response.json();
+}
+
+// Upload justification document
+export async function uploadJustificationDocument(documentId, file) {
+  const token = getStoredToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('documentId', documentId);
+
+  const response = await fetch(`${API_URL}/api/justification-documents/upload`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    throw new Error('Session expired. Please sign in again.');
+  }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to upload justification document');
+  }
+
+  return await response.json();
+}

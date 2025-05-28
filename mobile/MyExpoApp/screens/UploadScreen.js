@@ -33,6 +33,7 @@ const CATEGORIES = [
 const UploadScreen = ({ route, navigation }) => {
   const { userData } = route.params;
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [justificationFile, setJustificationFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [fileMetadata, setFileMetadata] = useState({
     category: '',
@@ -41,9 +42,10 @@ const UploadScreen = ({ route, navigation }) => {
     partyName: '',
     reference: '',
     notes: '',
-    partyType: 'Supplier' // Default for purchase documents
+    partyType: 'Supplier'
   });
   const [showCaptureOptions, setShowCaptureOptions] = useState(false);
+  const [showJustificationOptions, setShowJustificationOptions] = useState(false);
 
   // Function to handle camera capture
   const handleCameraCapture = async () => {
@@ -74,6 +76,34 @@ const UploadScreen = ({ route, navigation }) => {
     }
   };
 
+  // Function to handle justification document capture
+  const handleJustificationCapture = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Camera permission is required to take photos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: true,
+      });
+
+      if (!result.canceled) {
+        setJustificationFile({
+          ...result.assets[0],
+          id: Math.random().toString(36).substring(7),
+          name: `justification_${Date.now()}.jpg`,
+        });
+      }
+    } catch (error) {
+      console.error('Error capturing justification image:', error);
+      Alert.alert('Error', 'An error occurred while capturing the image.');
+    }
+  };
+
   // Function to pick a document
   const pickDocument = async () => {
     try {
@@ -94,6 +124,27 @@ const UploadScreen = ({ route, navigation }) => {
       setSelectedFiles([...selectedFiles, ...newFiles]);
     } catch (error) {
       console.error('Error picking document', error);
+      Alert.alert('Error', 'An error occurred while selecting the file.');
+    }
+  };
+
+  // Function to pick a justification document
+  const pickJustificationDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      setJustificationFile({
+        ...result.assets[0],
+        id: Math.random().toString(36).substring(7),
+      });
+    } catch (error) {
+      console.error('Error picking justification document', error);
       Alert.alert('Error', 'An error occurred while selecting the file.');
     }
   };
@@ -167,7 +218,7 @@ const UploadScreen = ({ route, navigation }) => {
           }
         };
 
-        await addDocument(documentData, userData.id);
+        await addDocument(documentData, userData.id, justificationFile?.uri);
       }
 
       Alert.alert(
@@ -178,6 +229,7 @@ const UploadScreen = ({ route, navigation }) => {
       // Reset form
       resetMetadataForm();
       setSelectedFiles([]);
+      setJustificationFile(null);
     } catch (error) {
       console.error('Upload error:', error);
       Alert.alert(
@@ -209,6 +261,35 @@ const UploadScreen = ({ route, navigation }) => {
           onPress={() => {
             pickDocument();
             setShowCaptureOptions(false);
+          }}
+        >
+          <MaterialIcons name="folder" size={24} color="#4CAF50" />
+          <Text style={styles.modalOptionText}>Choose from Gallery</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  // Function to render justification options modal
+  const renderJustificationOptions = () => (
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <TouchableOpacity 
+          style={styles.modalOption} 
+          onPress={() => {
+            handleJustificationCapture();
+            setShowJustificationOptions(false);
+          }}
+        >
+          <MaterialIcons name="camera-alt" size={24} color="#4CAF50" />
+          <Text style={styles.modalOptionText}>Take Photo</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.modalOption} 
+          onPress={() => {
+            pickJustificationDocument();
+            setShowJustificationOptions(false);
           }}
         >
           <MaterialIcons name="folder" size={24} color="#4CAF50" />
@@ -250,6 +331,22 @@ const UploadScreen = ({ route, navigation }) => {
     </View>
   );
 
+  const renderJustificationFile = () => (
+    <View style={styles.fileItem}>
+      {justificationFile?.type?.startsWith('image/') ? (
+        <Image 
+          source={{ uri: justificationFile.uri }} 
+          style={styles.fileThumbnail} 
+        />
+      ) : (
+        <MaterialIcons name="description" size={24} color="#4CAF50" />
+      )}
+      <Text style={styles.fileName} numberOfLines={1}>
+        {justificationFile?.name || 'Justification Document'}
+      </Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
@@ -271,6 +368,7 @@ const UploadScreen = ({ route, navigation }) => {
         </View>
 
         {showCaptureOptions && renderCaptureOptions()}
+        {showJustificationOptions && renderJustificationOptions()}
 
         {selectedFiles.length > 0 && (
           <View style={styles.filesSection}>
@@ -368,6 +466,21 @@ const UploadScreen = ({ route, navigation }) => {
               multiline
               numberOfLines={4}
             />
+          </View>
+
+          <View style={styles.justificationSection}>
+            <Text style={styles.sectionTitle}>Justification Document (Optional)</Text>
+            <TouchableOpacity 
+              style={styles.justificationButton}
+              onPress={() => setShowJustificationOptions(true)}
+              disabled={uploading}
+            >
+              <MaterialIcons name="attach-file" size={24} color="#4CAF50" />
+              <Text style={styles.justificationButtonText}>
+                {justificationFile ? 'Change Justification' : 'Add Justification'}
+              </Text>
+            </TouchableOpacity>
+            {justificationFile && renderJustificationFile()}
           </View>
         </View>
       </ScrollView>
@@ -568,6 +681,27 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 4,
+  },
+  justificationSection: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+  },
+  justificationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  justificationButtonText: {
+    marginLeft: 8,
+    color: '#4CAF50',
+    fontSize: 16,
   },
 });
 
