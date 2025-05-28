@@ -234,7 +234,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    paddingBottom: 10,
+    paddingBottom: 30,
+    marginTop: 40,
   },
   welcome: {
     fontSize: 16,
