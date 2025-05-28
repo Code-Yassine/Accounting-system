@@ -307,21 +307,60 @@ const UploadScreen = ({ route, navigation }) => {
       >
         <Ionicons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Upload Documents</Text>
+      <Text style={styles.headerTitle}>Upload Document</Text>
+      <TouchableOpacity 
+        style={styles.historyButton}
+        onPress={() => navigation.navigate('UploadHistory', { userData })}
+      >
+        <MaterialIcons name="history" size={24} color="#4CAF50" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderUploadArea = () => (
+    <View style={styles.uploadSection}>
+      <TouchableOpacity 
+        style={[
+          styles.uploadArea,
+          selectedFiles.length > 0 && styles.uploadAreaWithFiles
+        ]} 
+        onPress={() => setShowCaptureOptions(true)}
+        disabled={uploading}
+      >
+        <MaterialIcons 
+          name={selectedFiles.length > 0 ? "cloud-done" : "add-a-photo"} 
+          size={48} 
+          color="#4CAF50" 
+        />
+        <Text style={styles.uploadText}>
+          {selectedFiles.length > 0 
+            ? `${selectedFiles.length} file(s) selected` 
+            : 'Tap to add documents'}
+        </Text>
+        {selectedFiles.length > 0 && (
+          <Text style={styles.uploadSubText}>
+            Tap to add more documents
+          </Text>
+        )}
+      </TouchableOpacity>
     </View>
   );
 
   const renderFileItem = (file) => (
     <View key={file.id} style={styles.fileItem}>
-      {file.type?.startsWith('image/') ? (
-        <Image 
-          source={{ uri: file.uri }} 
-          style={styles.fileThumbnail} 
-        />
-      ) : (
-        <MaterialIcons name="description" size={24} color="#4CAF50" />
-      )}
-      <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
+      <View style={styles.fileInfo}>
+        {file.type?.startsWith('image/') ? (
+          <Image 
+            source={{ uri: file.uri }} 
+            style={styles.fileThumbnail} 
+          />
+        ) : (
+          <View style={styles.fileIconContainer}>
+            <MaterialIcons name="description" size={24} color="#4CAF50" />
+          </View>
+        )}
+        <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
+      </View>
       <TouchableOpacity 
         onPress={() => setSelectedFiles(files => files.filter(f => f.id !== file.id))}
         style={styles.removeButton}
@@ -329,6 +368,29 @@ const UploadScreen = ({ route, navigation }) => {
         <MaterialIcons name="close" size={20} color="#ff4444" />
       </TouchableOpacity>
     </View>
+  );
+
+  const renderCategoryButton = (category) => (
+    <TouchableOpacity 
+      key={category.id}
+      style={[
+        styles.categoryButton,
+        fileMetadata.category === category.id && styles.selectedCategory
+      ]}
+      onPress={() => selectCategory(category.id)}
+    >
+      <MaterialIcons 
+        name={category.icon} 
+        size={24} 
+        color={fileMetadata.category === category.id ? '#fff' : '#666'} 
+      />
+      <Text style={[
+        styles.categoryText,
+        fileMetadata.category === category.id && styles.selectedCategoryText
+      ]}>
+        {category.label}
+      </Text>
+    </TouchableOpacity>
   );
 
   const renderJustificationFile = () => (
@@ -351,21 +413,12 @@ const UploadScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       {renderHeader()}
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.uploadSection}>
-          <TouchableOpacity 
-            style={styles.uploadArea} 
-            onPress={() => setShowCaptureOptions(true)}
-            disabled={uploading}
-          >
-            <MaterialIcons name="add-a-photo" size={48} color="#4CAF50" />
-            <Text style={styles.uploadText}>
-              {selectedFiles.length > 0 
-                ? `${selectedFiles.length} file(s) selected` 
-                : 'Tap to add documents'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {renderUploadArea()}
 
         {showCaptureOptions && renderCaptureOptions()}
         {showJustificationOptions && renderJustificationOptions()}
@@ -385,29 +438,9 @@ const UploadScreen = ({ route, navigation }) => {
             horizontal 
             showsHorizontalScrollIndicator={false}
             style={styles.categoriesContainer}
+            contentContainerStyle={styles.categoriesContent}
           >
-            {CATEGORIES.map((category) => (
-              <TouchableOpacity 
-                key={category.id}
-                style={[
-                  styles.categoryButton,
-                  fileMetadata.category === category.id && styles.selectedCategory
-                ]}
-                onPress={() => selectCategory(category.id)}
-              >
-                <MaterialIcons 
-                  name={category.icon} 
-                  size={24} 
-                  color={fileMetadata.category === category.id ? '#fff' : '#666'} 
-                />
-                <Text style={[
-                  styles.categoryText,
-                  fileMetadata.category === category.id && styles.selectedCategoryText
-                ]}>
-                  {category.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {CATEGORIES.map(renderCategoryButton)}
           </ScrollView>
 
           <View style={styles.inputGroup}>
@@ -416,8 +449,10 @@ const UploadScreen = ({ route, navigation }) => {
               style={styles.input}
               value={fileMetadata.date}
               onChangeText={(value) => handleInputChange('date', value)}
-              placeholder="DD/MM/YYYY"
+              placeholder="DD-MM-YYYY"
               placeholderTextColor="#999"
+              keyboardType="numeric"
+              maxLength={10}
             />
           </View>
 
@@ -471,11 +506,18 @@ const UploadScreen = ({ route, navigation }) => {
           <View style={styles.justificationSection}>
             <Text style={styles.sectionTitle}>Justification Document (Optional)</Text>
             <TouchableOpacity 
-              style={styles.justificationButton}
+              style={[
+                styles.justificationButton,
+                justificationFile && styles.justificationButtonWithFile
+              ]}
               onPress={() => setShowJustificationOptions(true)}
               disabled={uploading}
             >
-              <MaterialIcons name="attach-file" size={24} color="#4CAF50" />
+              <MaterialIcons 
+                name={justificationFile ? "attach-file" : "add-circle-outline"} 
+                size={24} 
+                color="#4CAF50" 
+              />
               <Text style={styles.justificationButtonText}>
                 {justificationFile ? 'Change Justification' : 'Add Justification'}
               </Text>
@@ -487,7 +529,8 @@ const UploadScreen = ({ route, navigation }) => {
 
       <View style={styles.footer}>
         <TouchableOpacity 
-          style={[styles.submitButton, 
+          style={[
+            styles.submitButton, 
             (uploading || selectedFiles.length === 0) && styles.disabledButton
           ]} 
           onPress={handleUpload}
@@ -515,10 +558,12 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    elevation: 2,
   },
   backButton: {
     padding: 8,
@@ -526,11 +571,16 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginLeft: 16,
     color: '#333',
+  },
+  historyButton: {
+    padding: 8,
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
   },
   uploadSection: {
     padding: 20,
@@ -545,15 +595,28 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#f0f9f0',
   },
+  uploadAreaWithFiles: {
+    padding: 20,
+    backgroundColor: '#e8f5e9',
+  },
   uploadText: {
     marginTop: 12,
     fontSize: 16,
     color: '#666',
+    textAlign: 'center',
+  },
+  uploadSubText: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#4CAF50',
   },
   filesSection: {
     padding: 20,
     backgroundColor: '#fff',
     marginBottom: 8,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    elevation: 2,
   },
   sectionTitle: {
     fontSize: 18,
@@ -564,10 +627,29 @@ const styles = StyleSheet.create({
   fileItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 12,
     backgroundColor: '#f8f9fa',
     borderRadius: 8,
     marginBottom: 8,
+  },
+  fileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  fileIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: '#e8f5e9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fileThumbnail: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
   },
   fileName: {
     flex: 1,
@@ -576,14 +658,21 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   removeButton: {
-    padding: 4,
+    padding: 8,
+    marginLeft: 8,
   },
   formSection: {
     padding: 20,
     backgroundColor: '#fff',
+    borderRadius: 12,
+    marginHorizontal: 16,
+    elevation: 2,
   },
   categoriesContainer: {
     marginBottom: 20,
+  },
+  categoriesContent: {
+    paddingRight: 16,
   },
   categoryButton: {
     flexDirection: 'row',
@@ -620,16 +709,44 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     color: '#333',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   textArea: {
     height: 100,
     textAlignVertical: 'top',
+  },
+  justificationSection: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+  },
+  justificationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+    borderRadius: 8,
+    marginTop: 8,
+    backgroundColor: '#fff',
+  },
+  justificationButtonWithFile: {
+    backgroundColor: '#e8f5e9',
+  },
+  justificationButtonText: {
+    marginLeft: 8,
+    color: '#4CAF50',
+    fontSize: 16,
   },
   footer: {
     padding: 20,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
+    elevation: 4,
   },
   submitButton: {
     flexDirection: 'row',
@@ -638,6 +755,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     padding: 16,
     borderRadius: 8,
+    elevation: 2,
   },
   submitButtonText: {
     color: '#fff',
@@ -664,6 +782,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     width: '80%',
+    elevation: 4,
   },
   modalOption: {
     flexDirection: 'row',
@@ -676,32 +795,6 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     fontSize: 16,
     color: '#333',
-  },
-  fileThumbnail: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-  },
-  justificationSection: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-  },
-  justificationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#4CAF50',
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  justificationButtonText: {
-    marginLeft: 8,
-    color: '#4CAF50',
-    fontSize: 16,
   },
 });
 
