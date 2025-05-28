@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './ClientsAdmin.css';
 import {
   getAllClients,
-  addClient,
   acceptClient,
   rejectClient,
   deleteClient,
@@ -10,8 +9,7 @@ import {
 } from '../../api/clients';
 import { getAccountants } from '../../api/accountants';
 import { 
-  FiSearch, 
-  FiUserPlus, 
+  FiSearch,  
   FiCheck, 
   FiX, 
   FiTrash2, 
@@ -19,7 +17,6 @@ import {
   FiUserX, 
   FiUser, 
   FiUsers,
-  FiAlertTriangle,
   FiLoader,
   FiClock,
   FiFilter
@@ -52,149 +49,6 @@ function ConfirmModal({ show, title, message, confirmText, cancelText, onConfirm
             {confirmText || 'Confirm'}
           </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// Add Client Modal Component
-function AddClientModal({ show, onClose, onSubmit, isLoading, error }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [formErrors, setFormErrors] = useState({});
-
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!show) {
-      setName('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setFormErrors({});
-    }
-  }, [show]);
-
-  const validate = () => {
-    const errors = {};
-    
-    if (!name.trim()) errors.name = 'Name is required';
-    if (!email.trim()) errors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Email is invalid';
-    
-    if (!password) errors.password = 'Password is required';
-    else if (password.length < 6) errors.password = 'Password must be at least 6 characters';
-    
-    if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validate()) {
-      onSubmit({ name, email, password }); 
-    }
-  };
-
-  if (!show) return null;
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal">
-        <div className="modal-header">
-          <h3 className="modal-title">Add New Client</h3>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <div className="modal-body">
-            <div className="form-group">
-              <label htmlFor="name" className="form-label">Name</label>
-              <input
-                id="name"
-                type="text"
-                className="form-control"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter full name"
-                autoComplete="off"
-              />
-              {formErrors.name && <div className="form-error">{formErrors.name}</div>}
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="email" className="form-label">Email</label>
-              <input
-                id="email"
-                type="email"
-                className="form-control"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter email address"
-                autoComplete="off"
-              />
-              {formErrors.email && <div className="form-error">{formErrors.email}</div>}
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="password" className="form-label">Password</label>
-              <input
-                id="password"
-                type="password"
-                className="form-control"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                autoComplete="new-password"
-              />
-              {formErrors.password && <div className="form-error">{formErrors.password}</div>}
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                className="form-control"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm password"
-                autoComplete="new-password"
-              />
-              {formErrors.confirmPassword && <div className="form-error">{formErrors.confirmPassword}</div>}
-            </div>
-            
-            {error && <div className="form-error">{error}</div>}
-          </div>
-          
-          <div className="modal-actions">
-            <button 
-              type="button" 
-              className="clients-btn clients-btn-outline" 
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              <FiX /> Cancel
-            </button>
-            <button 
-              type="submit" 
-              className="clients-btn clients-btn-primary"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <FiLoader className="icon-spin" /> Adding...
-                </>
-              ) : (
-                <>
-                  <FiUserPlus /> Add Client
-                </>
-              )}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );
@@ -374,7 +228,6 @@ export default function ClientsAdmin() {
   const [accountants, setAccountants] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isAddingClient, setIsAddingClient] = useState(false);
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
   const [isModifyingClient, setIsModifyingClient] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);

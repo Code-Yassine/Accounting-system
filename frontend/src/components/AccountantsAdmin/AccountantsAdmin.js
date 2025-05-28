@@ -15,9 +15,7 @@ import {
   FiX, 
   FiTrash2, 
   FiUserX, 
-  FiUser, 
   FiUsers,
-  FiAlertTriangle,
   FiLoader,
   FiEdit2
 } from 'react-icons/fi';

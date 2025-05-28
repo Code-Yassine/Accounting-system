@@ -5,7 +5,6 @@ import {
   addClient,
   acceptClient,
   rejectClient,
-  deleteClient,
   modifyClient
 } from '../../api/clients';
 import { addDeleteRequest } from '../../api/deleteRequests';
@@ -16,8 +15,6 @@ import {
   FiX, 
   FiTrash2, 
   FiEdit2,
-  FiUserX, 
-  FiUser, 
   FiUsers,
   FiAlertTriangle,
   FiLoader,

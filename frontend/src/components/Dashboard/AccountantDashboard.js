@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AccountantDashboard.css';
-import { FiHome, FiUsers, FiLogOut, FiMenu, FiX, FiCalendar, FiDollarSign, FiFileText, FiFile } from 'react-icons/fi';
+import { FiHome, FiUsers, FiLogOut, FiMenu, FiX, FiFile } from 'react-icons/fi';
 import ClientsAccountant from '../ClientsAccountant/ClientsAccountant';
 import DocumentsAccountant from '../DocumentsAccountant/DocumentsAccountant';
 

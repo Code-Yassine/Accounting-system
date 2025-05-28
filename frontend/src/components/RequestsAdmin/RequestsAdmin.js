@@ -12,11 +12,8 @@ import {
   FiX, 
   FiClock,
   FiLoader,
-  FiAlertCircle,
   FiTrash2,
-  FiUserX,
-  FiFilter,
-  FiChevronRight
+  FiFilter
 } from 'react-icons/fi';
 
 // Empty state component
