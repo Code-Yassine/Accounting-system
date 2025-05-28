@@ -6,6 +6,9 @@ const auth = require('../middleware/auth');
 // Get documents for current accountant
 router.get('/accountant', auth, documentController.getDocumentsByAccountant);
 
+// Get document statistics
+router.get('/stats', documentController.getDocumentStats);
+
 // List documents for a specific client
 router.get('/', documentController.listDocuments);
 

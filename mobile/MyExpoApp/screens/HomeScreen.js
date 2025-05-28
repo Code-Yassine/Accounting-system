@@ -6,45 +6,78 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  Image,
+  RefreshControl
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { getDocumentStats } from '../api/documents';
 
 export default function HomeScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
-  // Get user data directly from route params
+  const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0 });
   const [userData, setUserData] = useState(route.params?.userData || null);
 
   useEffect(() => {
-    console.log("HomeScreen mounted with userData:", userData);
-    console.log("Route params:", route.params);
-    
-    // If we don't have userData but have it in route params, use that
     if (!userData && route.params?.userData) {
-      console.log("Setting userData from route params");
       setUserData(route.params.userData);
     }
   }, [route.params, userData]);
 
+  useEffect(() => {
+    if (userData) {
+      fetchStats();
+    }
+  }, [userData]);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      console.log('UserData in fetchStats:', userData);
+      
+      const clientId = userData._id || userData.id;
+      
+      if (!clientId) {
+        console.error('No client ID found in userData:', userData);
+        Alert.alert('Error', 'Unable to fetch statistics: Client ID not found');
+        return;
+      }
+
+      const statsData = await getDocumentStats(clientId);
+      console.log('Fetched stats:', statsData);
+      setStats(statsData);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      Alert.alert('Error', 'Failed to fetch document statistics');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchStats();
+  };
+
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      
-      // Navigate back to sign in
       if (navigation) {
         navigation.reset({
           index: 0,
           routes: [{ name: 'SignIn' }],
         });
       } else {
-        // Fallback when navigation is not available
         Alert.alert(
           "Signed Out",
           "You have been signed out successfully.",
           [{ 
             text: "OK", 
-            onPress: () => {
-              setLoading(false);
-            } 
+            onPress: () => setLoading(false)
           }]
         );
       }
@@ -54,96 +87,137 @@ export default function HomeScreen({ navigation, route }) {
     }
   };
 
-  // If we still don't have user data, create mock data for testing
   if (!userData) {
-    console.log("No userData, using mock data for display");
     const mockUserData = {
       name: "Client Demo",
       email: "client@example.com",
       status: "accepted",
-      role: "client"
+      role: "client",
+      _id: "mock-id"
     };
-    return renderContent(mockUserData, loading, handleSignOut, navigation);
+    return renderContent(mockUserData, loading, handleSignOut, navigation, stats, refreshing, onRefresh);
   }
 
-  return renderContent(userData, loading, handleSignOut, navigation);
+  return renderContent(userData, loading, handleSignOut, navigation, stats, refreshing, onRefresh);
 }
 
-// Separate the render function for clarity
-function renderContent(userData, loading, handleSignOut, navigation) {
+function renderContent(userData, loading, handleSignOut, navigation, stats, refreshing, onRefresh) {
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.welcome}>Welcome, {userData.name}</Text>
-        <Text style={styles.accountType}>Client Portal</Text>
-      </View>
-      
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Account Summary</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Name:</Text>
-          <Text style={styles.infoValue}>{userData.name}</Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f7f9fb" />
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4CAF50']}
+            tintColor="#4CAF50"
+          />
+        }
+      >
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.welcome}>Welcome back,</Text>
+            <Text style={styles.userName}>{userData.name}</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => Alert.alert('Profile', 'Profile settings coming soon!')}
+          >
+            <MaterialIcons name="account-circle" size={40} color="#4CAF50" />
+          </TouchableOpacity>
         </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Email:</Text>
-          <Text style={styles.infoValue}>{userData.email}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Status:</Text>
-          <View style={[
-            styles.statusBadge, 
-            { backgroundColor: userData.status === 'accepted' ? '#e6f4ea' : '#fce8e6' }
-          ]}>
-            <Text style={[
-              styles.statusText,
-              { color: userData.status === 'accepted' ? '#137333' : '#c5221f' }
-            ]}>
-              {userData.status.charAt(0).toUpperCase() + userData.status.slice(1)}
-            </Text>
+
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <MaterialIcons name="upload-file" size={24} color="#4CAF50" />
+            <Text style={styles.statNumber}>{loading ? '-' : stats.total}</Text>
+            <Text style={styles.statLabel}>Documents</Text>
+          </View>
+          <View style={styles.statCard}>
+            <MaterialIcons name="pending-actions" size={24} color="#FFA000" />
+            <Text style={styles.statNumber}>{loading ? '-' : stats.pending}</Text>
+            <Text style={styles.statLabel}>Pending</Text>
+          </View>
+          <View style={styles.statCard}>
+            <MaterialIcons name="check-circle" size={24} color="#2196F3" />
+            <Text style={styles.statNumber}>{loading ? '-' : stats.approved}</Text>
+            <Text style={styles.statLabel}>Approved</Text>
           </View>
         </View>
-      </View>
-      
-      <View style={styles.actionsContainer}>
-        <Text style={styles.sectionTitle}>Services</Text>
         
-        <View style={styles.actionGrid}>
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('Upload', { userData })}
-          >
-            <Text style={styles.actionIcon}>📤</Text>
-            <Text style={styles.actionText}>Upload Files</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('UploadHistory', { userData })}
-          >
-            <Text style={styles.actionIcon}>📋</Text>
-            <Text style={styles.actionText}>Upload History</Text>
-          </TouchableOpacity>
-
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Account Status</Text>
+            <View style={[
+              styles.statusBadge, 
+              { backgroundColor: userData.status === 'accepted' ? '#e6f4ea' : '#fce8e6' }
+            ]}>
+              <Text style={[
+                styles.statusText,
+                { color: userData.status === 'accepted' ? '#137333' : '#c5221f' }
+              ]}>
+                {userData.status.charAt(0).toUpperCase() + userData.status.slice(1)}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.infoRow}>
+            <MaterialIcons name="email" size={20} color="#6c7687" />
+            <Text style={styles.infoValue}>{userData.email}</Text>
+          </View>
         </View>
-      </View>
-      
-      <TouchableOpacity 
-        style={styles.signOutButton}
-        onPress={handleSignOut}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" size="small" />
-        ) : (
-          <Text style={styles.signOutButtonText}>Sign Out</Text>
-        )}
-      </TouchableOpacity>
-      
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>FinBooks Client Portal v1.0</Text>
-        <Text style={styles.footerText}>© 2025 Financial Experts, LLC</Text>
-      </View>
-    </ScrollView>
+        
+        <View style={styles.actionsContainer}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          
+          <View style={styles.actionGrid}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Upload', { userData })}
+            >
+              <View style={styles.actionIconContainer}>
+                <MaterialIcons name="cloud-upload" size={24} color="#4CAF50" />
+              </View>
+              <Text style={styles.actionText}>Upload Files</Text>
+              <Text style={styles.actionSubtext}>Upload new documents</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('UploadHistory', { userData })}
+            >
+              <View style={styles.actionIconContainer}>
+                <MaterialIcons name="history" size={24} color="#2196F3" />
+              </View>
+              <Text style={styles.actionText}>History</Text>
+              <Text style={styles.actionSubtext}>View uploaded documents</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+        <TouchableOpacity 
+          style={styles.signOutButton}
+          onPress={handleSignOut}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <>
+              <MaterialIcons name="logout" size={20} color="#fff" />
+              <Text style={styles.signOutButtonText}>Sign Out</Text>
+            </>
+          )}
+        </TouchableOpacity>
+        
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>FinBooks Client Portal v1.0</Text>
+          <Text style={styles.footerText}>© 2025 Financial Experts, LLC</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -151,31 +225,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f7f9fb',
-    marginTop: 40,
   },
-  loadingContainer: {
+  scrollView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f7f9fb',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#6c7687',
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     paddingBottom: 10,
   },
   welcome: {
+    fontSize: 16,
+    color: '#6c7687',
+  },
+  userName: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#183153',
-    marginBottom: 4,
   },
-  accountType: {
-    fontSize: 16,
+  profileButton: {
+    padding: 8,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 4,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#183153',
+    marginVertical: 4,
+  },
+  statLabel: {
+    fontSize: 12,
     color: '#6c7687',
   },
   card: {
@@ -183,44 +282,43 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     margin: 16,
-    marginTop: 10,
+    marginTop: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#183153',
-    marginBottom: 16,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f5',
-  },
-  infoLabel: {
-    width: 80,
-    fontSize: 16,
-    color: '#6c7687',
   },
   infoValue: {
     flex: 1,
     fontSize: 16,
     color: '#2d3748',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '500',
+    marginLeft: 12,
   },
   actionsContainer: {
     padding: 16,
@@ -233,7 +331,6 @@ const styles = StyleSheet.create({
   },
   actionGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   actionButton: {
@@ -242,44 +339,59 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  actionIcon: {
-    fontSize: 24,
-    marginBottom: 8,
+  actionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f0f9f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   actionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#2d3748',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#183153',
+    marginBottom: 4,
+  },
+  actionSubtext: {
+    fontSize: 12,
+    color: '#6c7687',
     textAlign: 'center',
   },
   signOutButton: {
-    backgroundColor: '#13335b',
-    borderRadius: 10,
-    margin: 16,
-    marginTop: 8,
-    padding: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#dc3545',
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   signOutButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    marginLeft: 8,
   },
   footer: {
-    padding: 16,
-    paddingBottom: 24,
+    padding: 20,
     alignItems: 'center',
   },
   footerText: {
+    fontSize: 12,
     color: '#6c7687',
-    fontSize: 14,
     marginBottom: 4,
   },
 }); 

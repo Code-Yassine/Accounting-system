@@ -349,3 +349,41 @@ exports.getDocumentsByAccountant = async (req, res) => {  try {
     });
   }
 };
+
+// Get document statistics
+exports.getDocumentStats = async (req, res) => {
+  try {
+    const clientId = req.query.clientId;
+    
+    if (!clientId) {
+      return res.status(400).json({ message: 'Client ID is required' });
+    }
+
+    // Get total documents count
+    const totalDocuments = await Document.countDocuments({ client: clientId });
+
+    // Get pending documents count (status: new)
+    const pendingDocuments = await Document.countDocuments({ 
+      client: clientId,
+      status: 'new'
+    });
+
+    // Get approved documents count (status: processed)
+    const approvedDocuments = await Document.countDocuments({ 
+      client: clientId,
+      status: 'processed'
+    });
+
+    res.json({
+      total: totalDocuments,
+      pending: pendingDocuments,
+      approved: approvedDocuments
+    });
+  } catch (err) {
+    console.error('Error fetching document statistics:', err);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: err.message 
+    });
+  }
+};

@@ -167,3 +167,14 @@ export async function getJustificationDocument(documentId) {
 //   if (!res.ok) throw new Error(data.message || 'Failed to modify document');
 //   return data;
 // }
+
+// Get document statistics
+export async function getDocumentStats(clientId) {
+  if (!clientId) {
+    throw new Error('Client ID is required');
+  }
+
+  const res = await fetch(`${API_URL}/api/documents/stats?clientId=${clientId}`);
+  if (!res.ok) throw new Error('Failed to fetch document statistics');
+  return await res.json();
+}
