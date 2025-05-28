@@ -20,6 +20,6 @@ const justificationDocumentSchema = new mongoose.Schema({
     required: true,
     default: 'Justification Document'
   }
-}, { timestamps: true });
+}, { timestamps: true , collection: 'justificationDocument' });
 
 module.exports = mongoose.model('JustificationDocument', justificationDocumentSchema); 
