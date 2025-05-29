@@ -65,12 +65,13 @@ A comprehensive financial document management solution with web and mobile inter
    - Linux: `sudo systemctl start mongod`
    - macOS: `brew services start mongodb-community`
 3. Create a database named `financial_system`:
-   ```bash
+```bash
    mongosh
    use financial_system
-   ```
+```
 
 ### Creating Initial Admin User
+```bash
 use financial_system
 
 db.admin.insertOne({
@@ -80,7 +81,7 @@ db.admin.insertOne({
   createdAt: new Date(),
   updatedAt: new Date()
 })
-
+```
 ### Backend Setup
 ```bash
 cd backend
