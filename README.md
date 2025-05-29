@@ -83,8 +83,8 @@ db.admin.insertOne({
 })
 ```
 
-### Collections of mongodb 
-![Project Database Structure](./image.png)
+### mongodb Collections 
+![Collections](./image.png)
 ### Backend Setup
 ```bash
 cd backend
