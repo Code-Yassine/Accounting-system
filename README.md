@@ -82,6 +82,9 @@ db.admin.insertOne({
   updatedAt: new Date()
 })
 ```
+
+### Collections of mongodb 
+![Project Database Structure](./image.png)
 ### Backend Setup
 ```bash
 cd backend
