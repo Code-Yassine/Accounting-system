@@ -58,6 +58,29 @@ A comprehensive financial document management solution with web and mobile inter
 - MongoDB
 - npm or yarn
 
+### MongoDB Setup
+1. Install MongoDB Community Edition from [MongoDB Download Center](https://www.mongodb.com/try/download/community)
+2. Start MongoDB service:
+   - Windows: MongoDB runs as a service automatically
+   - Linux: `sudo systemctl start mongod`
+   - macOS: `brew services start mongodb-community`
+3. Create a database named `financial_system`:
+   ```bash
+   mongosh
+   use financial_system
+   ```
+
+### Creating Initial Admin User
+use financial_system
+
+db.admin.insertOne({
+  name: "Admin User",
+  email: "admin@example.com",
+  password: "password",
+  createdAt: new Date(),
+  updatedAt: new Date()
+})
+
 ### Backend Setup
 ```bash
 cd backend
