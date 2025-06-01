@@ -200,9 +200,3 @@ REACT_APP_API_URL=your_URL_API
 
 ## 📧 Contact & Support
 For questions, issues, or feature requests, please open an issue or contact the maintainer.
-
----
-
-## 📅 Last Updated
-May 23, 2025
-
