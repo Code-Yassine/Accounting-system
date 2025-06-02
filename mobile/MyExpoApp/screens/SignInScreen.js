@@ -37,10 +37,10 @@ export default function SignInScreen({ navigation }) {
         routes: [{ name: 'Home', params: { userData } }],
       });
     } catch (error) {
-      console.error('Sign in error:', error);
+      // Always show a generic message for client sign-in
       Alert.alert(
         'Sign In Failed',
-        error.message || 'Please check your credentials and try again'
+        'Incorrect email or password. Please try again.'
       );
     } finally {
       setLoading(false);

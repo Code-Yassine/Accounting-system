@@ -40,7 +40,8 @@ export default function SignIn({ onSignIn }) {
       if (err.name === 'TypeError') {
         setError('Cannot connect to backend. Is the server running?');
       } else {
-        setError(err.message);
+        // Always show a generic message for client sign-in
+        setError('Incorrect email or password. Please try again.');
       }
     } finally {
       setLoading(false);
