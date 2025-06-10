@@ -213,8 +213,8 @@ function renderContent(userData, loading, handleSignOut, navigation, stats, refr
         </TouchableOpacity>
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>FinBooks Client Portal v1.0</Text>
-          <Text style={styles.footerText}>© 2025 Financial Experts, LLC</Text>
+          <Text style={styles.footerText}>Clever Office Client Portal v1.0</Text>
+          <Text style={styles.footerText}>© 2025 Clever Office, LLC</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -75,7 +75,7 @@ export default function AccountantDashboard({ onSignOut }) {
       </button>
       
       <aside className={`admin-dashboard-sidebar ${sidebarOpen ? 'active' : ''}`}>
-        <div className="admin-dashboard-logo">FinBooks</div>
+        <div className="admin-dashboard-logo">Clever Office</div>
         
         <nav className="admin-dashboard-nav">
           <a 
