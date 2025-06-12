@@ -53,9 +53,9 @@ export default function SignIn({ onSignIn }) {
       <div className="signin-content">
         <div className="signin-header">
           <div className="signin-logo">
-            <span className="signin-logo-text">FB</span>
+            <span className="signin-logo-text">CO</span>
           </div>
-          <h1 className="signin-title">FinBooks</h1>
+          <h1 className="signin-title">Clever Office</h1>
           <p className="signin-subtitle">Financial Management Platform</p>
         </div>
 
@@ -130,7 +130,7 @@ export default function SignIn({ onSignIn }) {
         </div>
 
         <footer className="signin-footer">
-          <p>© 2025 FinBooks. All rights reserved.</p>
+          <p>© 2025 Clever Office. All rights reserved.</p>
         </footer>
       </div>
     </div>
