@@ -18,6 +18,6 @@
     "mongodb": "6.16",
     "mongoose": "^8.14.0",
     "multer": "^2.0.0",
-    "nodemailer": "^7.0.3"
+    "nodemailer": "^8.0.4"
   }
 }
